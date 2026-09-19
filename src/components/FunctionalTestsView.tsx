@@ -90,25 +90,25 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
       {/* Top Breadcrumb & Heading */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-code-sm text-[#908fa0] mb-1">
+          <div className="flex items-center gap-2 text-xs font-code-sm text-[var(--color-outline)] mb-1">
             <span>QA Automation Hub</span>
             <span>/</span>
             <span>Test Automation Suite</span>
             <span>/</span>
-            <span className="text-[#8083ff]">Execution Waterfall</span>
+            <span className="text-[var(--color-primary-container)]">Execution Waterfall</span>
           </div>
-          <h1 className="font-headline-xl text-2xl sm:text-3xl font-bold text-[#d3e4fe]">
+          <h1 className="font-headline-xl text-2xl sm:text-3xl font-bold text-[var(--color-on-surface)]">
             Playwright Test Suite • Execution Waterfall
           </h1>
-          <p className="font-body-md text-sm text-[#c7c4d7] mt-1">
-            Worker #3 (PID 4914) running <code className="text-[#c0c1ff] font-mono">e2e/checkout-journey.spec.ts</code> against Chromium 124 Headless.
+          <p className="font-body-md text-sm text-[var(--color-on-surface-variant)] mt-1">
+            Worker #3 (PID 4914) running <code className="text-[var(--color-primary)] font-mono">e2e/checkout-journey.spec.ts</code> against Chromium 124 Headless.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyCommand}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#102034] hover:bg-[#1b2b3f] text-[#4cd7f6] border border-[#26364a] text-xs font-code-sm transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-tertiary)] border border-[var(--color-surface-container-highest)] text-xs font-code-sm transition-all"
             title="Copy command line trigger"
           >
             <span className="material-symbols-outlined text-sm">content_copy</span>
@@ -118,7 +118,7 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
       </div>
 
       {/* Control / Filter Bar */}
-      <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         {/* Spec picker tabs */}
         <div className="flex flex-wrap items-center gap-1.5">
           {[
@@ -132,8 +132,8 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
               onClick={() => setSelectedSpec(tab.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
                 selectedSpec === tab.id
-                  ? 'bg-[#8083ff] text-[#0d0096] font-bold shadow-sm'
-                  : 'bg-[#031427] text-[#c7c4d7] hover:text-white border border-[#1b2b3f]'
+                  ? 'bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] font-bold shadow-sm'
+                  : 'bg-[var(--color-surface)] text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] border border-[var(--color-surface-container-high)]'
               }`}
             >
               {tab.label}
@@ -143,11 +143,11 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
 
         {/* Status badges */}
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#031427] border border-[#1b2b3f] text-xs font-mono">
-            <span className="text-[#908fa0]">Persona:</span>
-            <span className="text-[#ffb4ab] font-bold">{activePersona}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-xs font-mono">
+            <span className="text-[var(--color-outline)]">Persona:</span>
+            <span className="text-[var(--color-error)] font-bold">{activePersona}</span>
           </div>
-          <span className="px-2.5 py-1 rounded bg-[#93000a] text-[#ffdad6] font-mono text-xs font-bold uppercase border border-[#ffb4ab]/30">
+          <span className="px-2.5 py-1 rounded bg-[var(--color-error-container)] text-[var(--color-on-error-container)] font-mono text-xs font-bold uppercase border border-[var(--color-error)]/30">
             FAILED AT STEP 07
           </span>
         </div>
@@ -156,17 +156,17 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
       {/* 2-Column Waterfall & Visual DOM Snapshot */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 7 Cols: Execution Waterfall Steps */}
-        <div className="lg:col-span-7 bg-[#0b1c30] border border-[#1b2b3f] rounded-xl p-5">
-          <div className="flex items-center justify-between pb-4 border-b border-[#1b2b3f]">
+        <div className="lg:col-span-7 bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-5">
+          <div className="flex items-center justify-between pb-4 border-b border-[var(--color-surface-container-high)]">
             <div>
-              <h2 className="font-headline-md text-base font-bold text-[#d3e4fe]">
+              <h2 className="font-headline-md text-base font-bold text-[var(--color-on-surface)]">
                 Execution Step Waterfall (Steps 01 - 09)
               </h2>
-              <p className="font-code-sm text-xs text-[#908fa0]">
+              <p className="font-code-sm text-xs text-[var(--color-outline)]">
                 Chronological sequence recorded by Playwright Tracing Agent
               </p>
             </div>
-            <span className="font-code-sm text-xs text-[#ffb4ab]">Total Elapsed: 6.42s</span>
+            <span className="font-code-sm text-xs text-[var(--color-error)]">Total Elapsed: 6.42s</span>
           </div>
 
           <div className="mt-4 space-y-2.5">
@@ -180,10 +180,10 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                   key={step.stepNumber}
                   className={`rounded-lg border transition-all ${
                     isFailed
-                      ? 'bg-[#93000a]/15 border-[#93000a]'
+                      ? 'bg-[var(--color-error-container)]/15 border-[var(--color-error-container)]'
                       : isSkipped
-                      ? 'bg-[#031427]/40 border-[#1b2b3f]/50 opacity-60'
-                      : 'bg-[#031427] border-[#1b2b3f] hover:border-[#26364a]'
+                      ? 'bg-[var(--color-surface)]/40 border-[var(--color-surface-container-high)]/50 opacity-60'
+                      : 'bg-[var(--color-surface)] border-[var(--color-surface-container-high)] hover:border-[var(--color-surface-container-highest)]'
                   }`}
                 >
                   <div
@@ -196,10 +196,10 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                       <span
                         className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
                           isFailed
-                            ? 'bg-[#93000a] text-[#ffdad6]'
+                            ? 'bg-[var(--color-error-container)] text-[var(--color-on-error-container)]'
                             : isSkipped
-                            ? 'bg-[#1b2b3f] text-[#908fa0]'
-                            : 'bg-[#00a572]/20 text-[#4edea3]'
+                            ? 'bg-[var(--color-surface-container-high)] text-[var(--color-outline)]'
+                            : 'bg-[var(--color-secondary-container)]/20 text-[var(--color-secondary)]'
                         }`}
                       >
                         {step.stepNumber}
@@ -207,30 +207,30 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                       <span
                         className={`font-mono text-[11px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
                           step.action === 'FAILED ACTION'
-                            ? 'bg-[#93000a] text-[#ffdad6]'
-                            : 'bg-[#102034] text-[#4cd7f6]'
+                            ? 'bg-[var(--color-error-container)] text-[var(--color-on-error-container)]'
+                            : 'bg-[var(--color-surface-container)] text-[var(--color-tertiary)]'
                         }`}
                       >
                         {step.action}
                       </span>
-                      <code className="text-xs font-mono text-[#d3e4fe] truncate">
+                      <code className="text-xs font-mono text-[var(--color-on-surface)] truncate">
                         {step.code}
                       </code>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0 ml-2">
-                      <span className="font-mono text-[11px] text-[#908fa0]">
+                      <span className="font-mono text-[11px] text-[var(--color-outline)]">
                         {step.duration}
                       </span>
                       {step.screenshot && (
                         <span
-                          className="material-symbols-outlined text-[#4cd7f6] text-sm"
+                          className="material-symbols-outlined text-[var(--color-tertiary)] text-sm"
                           title="DOM snapshot recorded"
                         >
                           photo_camera
                         </span>
                       )}
-                      <span className="material-symbols-outlined text-[#908fa0] text-sm">
+                      <span className="material-symbols-outlined text-[var(--color-outline)] text-sm">
                         {isExpanded ? 'expand_less' : 'expand_more'}
                       </span>
                     </div>
@@ -238,13 +238,13 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
 
                   {/* Expandable Step details */}
                   {isExpanded && (
-                    <div className="px-3 pb-3 pt-1 border-t border-[#1b2b3f]/60 font-mono text-xs">
+                    <div className="px-3 pb-3 pt-1 border-t border-[var(--color-surface-container-high)]/60 font-mono text-xs">
                       {isFailed && step.errorLog ? (
-                        <div className="p-3 rounded bg-[#000f21] border border-[#93000a]/40 text-[#ffdad6] space-y-1 overflow-x-auto whitespace-pre-wrap">
+                        <div className="p-3 rounded bg-[var(--color-surface-container-lowest)] border border-[var(--color-error-container)]/40 text-[var(--color-error)] space-y-1 overflow-x-auto whitespace-pre-wrap">
                           {step.errorLog}
                         </div>
                       ) : (
-                        <div className="text-[#908fa0] text-[11px] py-1">
+                        <div className="text-[var(--color-outline)] text-[11px] py-1">
                           Step executed cleanly on worker thread #3. Evaluated selector resolved within {step.duration}.
                         </div>
                       )}
@@ -257,30 +257,30 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
         </div>
 
         {/* Right 5 Cols: Visual DOM Snapshot at Failure */}
-        <div className="lg:col-span-5 bg-[#0b1c30] border border-[#1b2b3f] rounded-xl p-5 flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-[#1b2b3f]">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-surface-container-high)]">
               <div>
-                <h2 className="font-headline-md text-base font-bold text-[#d3e4fe]">
+                <h2 className="font-headline-md text-base font-bold text-[var(--color-on-surface)]">
                   DOM Snapshot at Failure (Step 07)
                 </h2>
-                <p className="font-code-sm text-xs text-[#908fa0]">
-                  Target: <code className="text-[#ffb4ab]">#last-name</code> on /checkout-step-one.html
+                <p className="font-code-sm text-xs text-[var(--color-outline)]">
+                  Target: <code className="text-[var(--color-error)]">#last-name</code> on /checkout-step-one.html
                 </p>
               </div>
-              <span className="material-symbols-outlined text-[#ffb4ab] text-xl">
+              <span className="material-symbols-outlined text-[var(--color-error)] text-xl">
                 bug_report
               </span>
             </div>
 
             {/* Viewport Frame */}
-            <div className="mt-4 rounded-lg overflow-hidden border border-[#26364a] bg-[#000f21] relative group">
-              <div className="px-3 py-1.5 bg-[#102034] border-b border-[#26364a] flex items-center justify-between text-[11px] font-mono text-[#908fa0]">
+            <div className="mt-4 rounded-lg overflow-hidden border border-[var(--color-surface-container-highest)] bg-[var(--color-surface-container-lowest)] relative group">
+              <div className="px-3 py-1.5 bg-[var(--color-surface-container)] border-b border-[var(--color-surface-container-highest)] flex items-center justify-between text-[11px] font-mono text-[var(--color-outline)]">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#ffb4ab]"></span>
-                  <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                  <span className="w-2 h-2 rounded-full bg-[#4edea3]"></span>
-                  <span className="ml-2 text-[#d3e4fe]">SauceDemo - Checkout: Your Information</span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-error)]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-warning)]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)]"></span>
+                  <span className="ml-2 text-[var(--color-on-surface)]">SauceDemo - Checkout: Your Information</span>
                 </div>
                 <span>1920 x 1080</span>
               </div>
@@ -294,33 +294,33 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                 />
 
                 {/* Visual locator highlight callout */}
-                <div className="absolute top-[48%] left-[28%] border-2 border-[#ffb4ab] bg-[#93000a]/50 text-[#ffdad6] text-[10px] font-mono px-2 py-0.5 rounded shadow-lg animate-pulse">
+                <div className="absolute top-[48%] left-[28%] border-2 border-[var(--color-error)] bg-[var(--color-error-container)]/50 text-[var(--color-on-error-container)] text-[10px] font-mono px-2 py-0.5 rounded shadow-lg animate-pulse">
                   Target: #last-name (Input Locked)
                 </div>
               </div>
             </div>
 
             <div className="mt-4 space-y-2 text-xs font-code-sm">
-              <div className="flex items-center justify-between p-2 rounded bg-[#031427] border border-[#1b2b3f]">
-                <span className="text-[#908fa0]">Failing Selector</span>
-                <span className="font-mono text-[#ffb4ab] font-bold">input#last-name</span>
+              <div className="flex items-center justify-between p-2 rounded bg-[var(--color-surface)] border border-[var(--color-surface-container-high)]">
+                <span className="text-[var(--color-outline)]">Failing Selector</span>
+                <span className="font-mono text-[var(--color-error)] font-bold">input#last-name</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded bg-[#031427] border border-[#1b2b3f]">
-                <span className="text-[#908fa0]">Page Route</span>
-                <span className="font-mono text-[#d3e4fe]">/checkout-step-one.html</span>
+              <div className="flex items-center justify-between p-2 rounded bg-[var(--color-surface)] border border-[var(--color-surface-container-high)]">
+                <span className="text-[var(--color-outline)]">Page Route</span>
+                <span className="font-mono text-[var(--color-on-surface)]">/checkout-step-one.html</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded bg-[#031427] border border-[#1b2b3f]">
-                <span className="text-[#908fa0]">Playwright Action</span>
-                <span className="font-mono text-[#c0c1ff]">page.fill("#last-name", "Tester")</span>
+              <div className="flex items-center justify-between p-2 rounded bg-[var(--color-surface)] border border-[var(--color-surface-container-high)]">
+                <span className="text-[var(--color-outline)]">Playwright Action</span>
+                <span className="font-mono text-[var(--color-primary)]">page.fill("#last-name", "Tester")</span>
               </div>
             </div>
           </div>
 
           {/* Action CTAs */}
-          <div className="mt-5 pt-4 border-t border-[#1b2b3f] flex flex-col sm:flex-row items-center gap-2.5">
+          <div className="mt-5 pt-4 border-t border-[var(--color-surface-container-high)] flex flex-col sm:flex-row items-center gap-2.5">
             <button
               onClick={handleDownloadTrace}
-              className="w-full sm:w-1/2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#102034] hover:bg-[#1b2b3f] text-[#c0c1ff] border border-[#26364a] text-xs font-bold transition-all cursor-pointer"
+              className="w-full sm:w-1/2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-primary)] border border-[var(--color-surface-container-highest)] text-xs font-bold transition-all cursor-pointer"
             >
               <span className="material-symbols-outlined text-sm">download</span>
               <span>Download trace.zip</span>
@@ -328,7 +328,7 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
 
             <button
               onClick={onLogJiraIssue}
-              className="w-full sm:w-1/2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#8083ff] hover:bg-[#c0c1ff] text-[#0d0096] text-xs font-bold transition-all cursor-pointer shadow-md"
+              className="w-full sm:w-1/2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-primary-container)] hover:bg-[var(--color-primary)] text-[var(--color-on-primary-container)] text-xs font-bold transition-all cursor-pointer shadow-md"
             >
               <span className="material-symbols-outlined text-sm">post_add</span>
               <span>Log Jira Ticket</span>
@@ -338,17 +338,17 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
       </div>
 
       {/* Full Persona Suite Matrix Execution */}
-      <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl p-5">
-        <div className="flex items-center justify-between pb-4 border-b border-[#1b2b3f]">
+      <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-5">
+        <div className="flex items-center justify-between pb-4 border-b border-[var(--color-surface-container-high)]">
           <div>
-            <h2 className="font-headline-md text-base font-bold text-[#d3e4fe]">
+            <h2 className="font-headline-md text-base font-bold text-[var(--color-on-surface)]">
               SauceDemo Persona Suite Matrix Execution
             </h2>
-            <p className="font-code-sm text-xs text-[#908fa0]">
+            <p className="font-code-sm text-xs text-[var(--color-outline)]">
               Automated end-to-end regression validation for all SauceDemo user accounts
             </p>
           </div>
-          <span className="font-label-badge text-xs px-2 py-0.5 rounded bg-[#102034] text-[#4edea3]">
+          <span className="font-label-badge text-xs px-2 py-0.5 rounded bg-[var(--color-surface-container)] text-[var(--color-secondary)]">
             6/6 Matrix Tested
           </span>
         </div>
@@ -356,7 +356,7 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
         <div className="overflow-x-auto mt-4">
           <table className="w-full text-left border-collapse font-code-sm text-xs">
             <thead>
-              <tr className="border-b border-[#1b2b3f] text-[11px] text-[#908fa0] uppercase tracking-wider">
+              <tr className="border-b border-[var(--color-surface-container-high)] text-[11px] text-[var(--color-outline)] uppercase tracking-wider">
                 <th className="pb-3 font-semibold">User Persona</th>
                 <th className="pb-3 font-semibold">Login & Session</th>
                 <th className="pb-3 font-semibold">Cart Add & Badge</th>
@@ -366,7 +366,7 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                 <th className="pb-3 font-semibold text-right">Suite Result</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1b2b3f]/60 font-mono">
+            <tbody className="divide-y divide-[var(--color-surface-container-high)]/60 font-mono">
               {matrixData.map((row) => (
                 <tr
                   key={row.persona}
@@ -374,21 +374,21 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                     setActivePersona(row.persona as UserPersona);
                     onShowToast(`Switched trace view to ${row.persona}`);
                   }}
-                  className="hover:bg-[#102034]/60 transition-colors cursor-pointer"
+                  className="hover:bg-[var(--color-surface-container)]/60 transition-colors cursor-pointer"
                 >
-                  <td className="py-3 font-bold text-[#d3e4fe]">
+                  <td className="py-3 font-bold text-[var(--color-on-surface)]">
                     {row.persona}
                   </td>
-                  <td className="py-3 text-[#4edea3]">{row.auth}</td>
-                  <td className="py-3 text-[#4edea3]">{row.cart}</td>
+                  <td className="py-3 text-[var(--color-secondary)]">{row.auth}</td>
+                  <td className="py-3 text-[var(--color-secondary)]">{row.cart}</td>
                   <td className="py-3">
                     <span
                       className={
                         row.plp.includes('FAILED')
-                          ? 'text-[#ffb4ab] font-bold'
+                          ? 'text-[var(--color-error)] font-bold'
                           : row.plp.includes('FLAKY')
-                          ? 'text-amber-300'
-                          : 'text-[#4edea3]'
+                          ? 'text-[var(--color-warning)]'
+                          : 'text-[var(--color-secondary)]'
                       }
                     >
                       {row.plp}
@@ -398,8 +398,8 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                     <span
                       className={
                         row.checkout.includes('FAILED')
-                          ? 'text-[#ffb4ab] font-bold'
-                          : 'text-[#4edea3]'
+                          ? 'text-[var(--color-error)] font-bold'
+                          : 'text-[var(--color-secondary)]'
                       }
                     >
                       {row.checkout}
@@ -409,10 +409,10 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                     <span
                       className={
                         row.order.includes('FAILED')
-                          ? 'text-[#ffb4ab] font-bold'
+                          ? 'text-[var(--color-error)] font-bold'
                           : row.order.includes('BLOCKED')
-                          ? 'text-[#908fa0]'
-                          : 'text-[#4edea3]'
+                          ? 'text-[var(--color-outline)]'
+                          : 'text-[var(--color-secondary)]'
                       }
                     >
                       {row.order}
@@ -422,10 +422,10 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                         row.overall === 'PASSED'
-                          ? 'bg-[#00a572]/20 text-[#4edea3]'
+                          ? 'bg-[var(--color-secondary-container)]/20 text-[var(--color-secondary)]'
                           : row.overall === 'FAILED'
-                          ? 'bg-[#93000a] text-[#ffdad6]'
-                          : 'bg-amber-500/20 text-amber-300'
+                          ? 'bg-[var(--color-error-container)] text-[var(--color-on-error-container)]'
+                          : 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
                       }`}
                     >
                       {row.overall}

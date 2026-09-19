@@ -48,6 +48,7 @@
   --color-on-tertiary-fixed-variant: #004e5c;
   --color-background: #031427;
   --color-on-background: #d3e4fe;
+  --color-warning: #fcd34d;
 
   --spacing-space-xs: 0.25rem;
   --spacing-space-sm: 0.5rem;
@@ -68,6 +69,108 @@
   --font-label-badge: "JetBrains Mono", monospace;
 }
 
+:root {
+  color-scheme: dark;
+  --color-scrollbar-track: rgba(3, 20, 39, 0.6);
+  --color-scrollbar-thumb: rgba(70, 69, 84, 0.6);
+  --color-scrollbar-thumb-hover: rgba(144, 143, 160, 0.8);
+}
+
+/*
+ * Light theme overrides. This app defaults to dark (the values in @theme
+ * above), so light mode is applied either when the OS prefers light and the
+ * user hasn't explicitly chosen dark, or when the user explicitly picks
+ * light via the theme toggle (data-theme="light", set by useTheme.ts).
+ * Keep both blocks below in sync when adding/changing tokens.
+ */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --color-surface: #fbfaff;
+    --color-surface-dim: #fbfaff;
+    --color-surface-bright: #ffffff;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #f5f2fa;
+    --color-surface-container: #efedf6;
+    --color-surface-container-high: #e9e7f0;
+    --color-surface-container-highest: #e3e1ea;
+    --color-surface-variant: #e3e1ea;
+    --color-on-surface: #1a1b23;
+    --color-on-surface-variant: #46464f;
+    --color-inverse-surface: #2f3038;
+    --color-inverse-on-surface: #f1f0f8;
+    --color-outline: #767680;
+    --color-outline-variant: #c6c5d0;
+    --color-surface-tint: #4649c9;
+    --color-primary: #4649c9;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #4f46e5;
+    --color-on-primary-container: #ffffff;
+    --color-inverse-primary: #c0c1ff;
+    --color-secondary: #006c4c;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #047857;
+    --color-on-secondary-container: #ffffff;
+    --color-tertiary: #00677d;
+    --color-on-tertiary: #ffffff;
+    --color-tertiary-container: #0e7490;
+    --color-on-tertiary-container: #ffffff;
+    --color-error: #ba1a1a;
+    --color-on-error: #ffffff;
+    --color-error-container: #dc2626;
+    --color-on-error-container: #ffffff;
+    --color-background: #fbfaff;
+    --color-on-background: #1a1b23;
+    --color-warning: #b45309;
+    --color-scrollbar-track: rgba(239, 237, 246, 0.6);
+    --color-scrollbar-thumb: rgba(198, 197, 208, 0.6);
+    --color-scrollbar-thumb-hover: rgba(118, 118, 128, 0.8);
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-surface: #fbfaff;
+  --color-surface-dim: #fbfaff;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f5f2fa;
+  --color-surface-container: #efedf6;
+  --color-surface-container-high: #e9e7f0;
+  --color-surface-container-highest: #e3e1ea;
+  --color-surface-variant: #e3e1ea;
+  --color-on-surface: #1a1b23;
+  --color-on-surface-variant: #46464f;
+  --color-inverse-surface: #2f3038;
+  --color-inverse-on-surface: #f1f0f8;
+  --color-outline: #767680;
+  --color-outline-variant: #c6c5d0;
+  --color-surface-tint: #4649c9;
+  --color-primary: #4649c9;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #4f46e5;
+  --color-on-primary-container: #ffffff;
+  --color-inverse-primary: #c0c1ff;
+  --color-secondary: #006c4c;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #047857;
+  --color-on-secondary-container: #ffffff;
+  --color-tertiary: #00677d;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #0e7490;
+  --color-on-tertiary-container: #ffffff;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #dc2626;
+  --color-on-error-container: #ffffff;
+  --color-background: #fbfaff;
+  --color-on-background: #1a1b23;
+  --color-warning: #b45309;
+  --color-scrollbar-track: rgba(239, 237, 246, 0.6);
+  --color-scrollbar-thumb: rgba(198, 197, 208, 0.6);
+  --color-scrollbar-thumb-hover: rgba(118, 118, 128, 0.8);
+}
+
 @layer base {
   html, body {
     margin: 0;
@@ -84,14 +187,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(3, 20, 39, 0.6);
+  background: var(--color-scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(70, 69, 84, 0.6);
+  background: var(--color-scrollbar-thumb);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(144, 143, 160, 0.8);
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 .material-symbols-outlined {

@@ -20,15 +20,15 @@ export const Toast: React.FC<ToastProps> = ({ toasts, onDismiss }) => {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto bg-[#26364a] border border-[#464554] text-[#d3e4fe] px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 transition-all transform translate-y-0 opacity-100 max-w-md animate-in fade-in slide-in-from-bottom-2 duration-200"
+          className="pointer-events-auto bg-[var(--color-surface-container-highest)] border border-[var(--color-outline-variant)] text-[var(--color-on-surface)] px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 transition-all transform translate-y-0 opacity-100 max-w-md animate-in fade-in slide-in-from-bottom-2 duration-200"
         >
-          <span className="material-symbols-outlined text-[#4edea3] text-lg">
+          <span className="material-symbols-outlined text-[var(--color-secondary)] text-lg">
             {toast.icon || 'check_circle'}
           </span>
           <span className="text-xs sm:text-sm font-medium">{toast.message}</span>
           <button
             onClick={() => onDismiss(toast.id)}
-            className="ml-auto text-[#908fa0] hover:text-[#d3e4fe] p-0.5"
+            className="ml-auto text-[var(--color-outline)] hover:text-[var(--color-on-surface)] p-0.5"
           >
             <span className="material-symbols-outlined text-sm">close</span>
           </button>

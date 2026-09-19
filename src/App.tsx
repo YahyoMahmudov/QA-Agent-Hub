@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavigationTab, DefectIssue, ReviewPin, IssueStatus } from './types';
 import { INITIAL_DEFECT_ISSUES, INITIAL_REVIEW_PINS } from './data/mockData';
+import { useTheme } from './hooks/useTheme';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { DashboardView } from './components/DashboardView';
@@ -12,6 +13,7 @@ import { RunSuiteModal } from './components/RunSuiteModal';
 import { Toast, ToastData } from './components/Toast';
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [issues, setIssues] = useState<DefectIssue[]>(INITIAL_DEFECT_ISSUES);
   const [pins, setPins] = useState<ReviewPin[]>(INITIAL_REVIEW_PINS);
@@ -74,13 +76,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#031427] text-[#d3e4fe] antialiased">
+    <div className="min-h-screen flex flex-col bg-[var(--color-surface)] text-[var(--color-on-surface)] antialiased">
       {/* Global Header */}
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onRunFullSuite={() => setIsSuiteModalOpen(true)}
         recordCount={recordCount}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main Container */}

@@ -121,17 +121,17 @@ ${jiraModalIssue.diagnostic}
       {/* Top Breadcrumb & Heading */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-code-sm text-[#908fa0] mb-1">
+          <div className="flex items-center gap-2 text-xs font-code-sm text-[var(--color-outline)] mb-1">
             <span>QA Automation Hub</span>
             <span>/</span>
             <span>Defect Management</span>
             <span>/</span>
-            <span className="text-[#ffb4ab]">Triage & Issue Queue</span>
+            <span className="text-[var(--color-error)]">Triage & Issue Queue</span>
           </div>
-          <h1 className="font-headline-xl text-2xl sm:text-3xl font-bold text-[#d3e4fe]">
+          <h1 className="font-headline-xl text-2xl sm:text-3xl font-bold text-[var(--color-on-surface)]">
             Defect Issues Repository
           </h1>
-          <p className="font-body-md text-sm text-[#c7c4d7] mt-1">
+          <p className="font-body-md text-sm text-[var(--color-on-surface-variant)] mt-1">
             Triage, search, and export failures detected across Playwright suites, DOM scraper runs, and manual review pins.
           </p>
         </div>
@@ -139,7 +139,7 @@ ${jiraModalIssue.diagnostic}
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#102034] hover:bg-[#1b2b3f] text-[#c0c1ff] border border-[#26364a] text-xs font-code-sm transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--color-surface-container)] hover:bg-[var(--color-surface-container-high)] text-[var(--color-primary)] border border-[var(--color-surface-container-highest)] text-xs font-code-sm transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">download</span>
             <span>Export CSV</span>
@@ -153,7 +153,7 @@ ${jiraModalIssue.diagnostic}
                 onShowToast(`Synced ${selectedRowIds.length} tickets to Jira Cloud API`, 'sync');
               }
             }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#8083ff] text-[#0d0096] text-xs font-bold hover:bg-[#c0c1ff] transition-all cursor-pointer shadow-md"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] text-xs font-bold hover:bg-[var(--color-primary)] transition-all cursor-pointer shadow-md"
           >
             <span className="material-symbols-outlined text-base">cloud_upload</span>
             <span>Bulk Jira Sync ({selectedRowIds.length})</span>
@@ -163,37 +163,37 @@ ${jiraModalIssue.diagnostic}
 
       {/* KPI Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-lg p-3">
-          <span className="text-[11px] font-code-sm text-[#908fa0] uppercase block">Total Defects</span>
-          <span className="text-xl font-bold font-mono text-[#d3e4fe]">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
+          <span className="text-[11px] font-code-sm text-[var(--color-outline)] uppercase block">Total Defects</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-on-surface)]">
             {issues.length} Issues Logged
           </span>
         </div>
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-lg p-3">
-          <span className="text-[11px] font-code-sm text-[#ffb4ab] uppercase block">Critical Severity</span>
-          <span className="text-xl font-bold font-mono text-[#ffb4ab]">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
+          <span className="text-[11px] font-code-sm text-[var(--color-error)] uppercase block">Critical Severity</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-error)]">
             {issues.filter((i) => i.severity === 'critical').length} Blockers
           </span>
         </div>
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-lg p-3">
-          <span className="text-[11px] font-code-sm text-amber-300 uppercase block">Open Triage</span>
-          <span className="text-xl font-bold font-mono text-amber-300">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
+          <span className="text-[11px] font-code-sm text-[var(--color-warning)] uppercase block">Open Triage</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-warning)]">
             {issues.filter((i) => i.status === 'open').length} Awaiting Fix
           </span>
         </div>
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-lg p-3">
-          <span className="text-[11px] font-code-sm text-[#4cd7f6] uppercase block">Scraper Detected</span>
-          <span className="text-xl font-bold font-mono text-[#4cd7f6]">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
+          <span className="text-[11px] font-code-sm text-[var(--color-tertiary)] uppercase block">Scraper Detected</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-tertiary)]">
             {issues.filter((i) => i.source === 'Content Scraper').length} Auto-scraped
           </span>
         </div>
       </div>
 
       {/* Search & Multi-Facet Filters */}
-      <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl p-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         {/* Search input */}
         <div className="relative w-full lg:w-80">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#908fa0] text-sm">
+          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[var(--color-outline)] text-sm">
             search
           </span>
           <input
@@ -201,12 +201,12 @@ ${jiraModalIssue.diagnostic}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by ID, diagnostic, or URL..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-[#031427] border border-[#1b2b3f] text-xs text-[#d3e4fe] placeholder-[#908fa0] focus:border-[#8083ff] focus:outline-hidden"
+            className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-xs text-[var(--color-on-surface)] placeholder-[var(--color-outline)] focus:border-[var(--color-primary-container)] focus:outline-hidden"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-2 text-[#908fa0] hover:text-white"
+              className="absolute right-2.5 top-2 text-[var(--color-outline)] hover:text-[var(--color-on-surface)]"
             >
               <span className="material-symbols-outlined text-xs">close</span>
             </button>
@@ -219,7 +219,7 @@ ${jiraModalIssue.diagnostic}
           <select
             value={selectedArea}
             onChange={(e) => setSelectedArea(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-[#031427] border border-[#1b2b3f] text-[#c7c4d7] focus:border-[#8083ff] focus:outline-hidden"
+            className="px-2.5 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)] focus:border-[var(--color-primary-container)] focus:outline-hidden"
           >
             <option value="ALL">All Areas</option>
             <option value="PLP">PLP</option>
@@ -231,7 +231,7 @@ ${jiraModalIssue.diagnostic}
           <select
             value={selectedSeverity}
             onChange={(e) => setSelectedSeverity(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-[#031427] border border-[#1b2b3f] text-[#c7c4d7] focus:border-[#8083ff] focus:outline-hidden"
+            className="px-2.5 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)] focus:border-[var(--color-primary-container)] focus:outline-hidden"
           >
             <option value="ALL">All Severities</option>
             <option value="critical">Critical</option>
@@ -244,7 +244,7 @@ ${jiraModalIssue.diagnostic}
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-[#031427] border border-[#1b2b3f] text-[#c7c4d7] focus:border-[#8083ff] focus:outline-hidden"
+            className="px-2.5 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)] focus:border-[var(--color-primary-container)] focus:outline-hidden"
           >
             <option value="ALL">All Statuses</option>
             <option value="open">Open</option>
@@ -257,7 +257,7 @@ ${jiraModalIssue.diagnostic}
           <select
             value={selectedSource}
             onChange={(e) => setSelectedSource(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg bg-[#031427] border border-[#1b2b3f] text-[#c7c4d7] focus:border-[#8083ff] focus:outline-hidden"
+            className="px-2.5 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)] focus:border-[var(--color-primary-container)] focus:outline-hidden"
           >
             <option value="ALL">All Sources</option>
             <option value="Content Scraper">Content Scraper</option>
@@ -268,11 +268,11 @@ ${jiraModalIssue.diagnostic}
       </div>
 
       {/* Main Issues Data Table */}
-      <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl overflow-hidden shadow-xl">
+      <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse font-code-sm text-xs">
             <thead>
-              <tr className="bg-[#102034] border-b border-[#1b2b3f] text-[11px] text-[#908fa0] uppercase tracking-wider">
+              <tr className="bg-[var(--color-surface-container)] border-b border-[var(--color-surface-container-high)] text-[11px] text-[var(--color-outline)] uppercase tracking-wider">
                 <th className="p-3.5 w-10 text-center">
                   <input
                     type="checkbox"
@@ -281,7 +281,7 @@ ${jiraModalIssue.diagnostic}
                       selectedRowIds.length === filteredIssues.length
                     }
                     onChange={handleSelectAll}
-                    className="accent-[#8083ff] rounded"
+                    className="accent-[var(--color-primary-container)] rounded"
                   />
                 </th>
                 <th className="p-3.5 font-semibold">Issue ID & Diagnostic Title</th>
@@ -293,14 +293,14 @@ ${jiraModalIssue.diagnostic}
                 <th className="p-3.5 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1b2b3f]/60 font-body-sm">
+            <tbody className="divide-y divide-[var(--color-surface-container-high)]/60 font-body-sm">
               {filteredIssues.map((issue) => {
                 const isSelected = selectedRowIds.includes(issue.id);
                 return (
                   <tr
                     key={issue.id}
-                    className={`hover:bg-[#102034]/60 transition-colors ${
-                      isSelected ? 'bg-[#8083ff]/10' : ''
+                    className={`hover:bg-[var(--color-surface-container)]/60 transition-colors ${
+                      isSelected ? 'bg-[var(--color-primary-container)]/10' : ''
                     }`}
                   >
                     <td className="p-3.5 text-center">
@@ -308,36 +308,36 @@ ${jiraModalIssue.diagnostic}
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectRow(issue.id)}
-                        className="accent-[#8083ff] rounded"
+                        className="accent-[var(--color-primary-container)] rounded"
                       />
                     </td>
                     <td className="p-3.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-[#8083ff]">{issue.id}</span>
-                        <span className="font-semibold text-[#d3e4fe]">{issue.title}</span>
+                        <span className="font-mono font-bold text-[var(--color-primary-container)]">{issue.id}</span>
+                        <span className="font-semibold text-[var(--color-on-surface)]">{issue.title}</span>
                       </div>
-                      <div className="text-[11px] font-mono text-[#908fa0] mt-0.5 truncate max-w-lg">
+                      <div className="text-[11px] font-mono text-[var(--color-outline)] mt-0.5 truncate max-w-lg">
                         {issue.diagnostic}
                       </div>
                     </td>
                     <td className="p-3.5">
-                      <span className="px-2 py-0.5 rounded bg-[#031427] border border-[#1b2b3f] text-[#c0c1ff] font-mono text-[10px]">
+                      <span className="px-2 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-[var(--color-primary)] font-mono text-[10px]">
                         {issue.area}
                       </span>
                     </td>
-                    <td className="p-3.5 font-mono text-[#c7c4d7] text-xs">
+                    <td className="p-3.5 font-mono text-[var(--color-on-surface-variant)] text-xs">
                       {issue.source}
                     </td>
                     <td className="p-3.5">
                       <span
                         className={`font-label-badge text-[10px] px-2 py-0.5 rounded uppercase font-bold ${
                           issue.severity === 'critical'
-                            ? 'bg-[#93000a] text-[#ffdad6]'
+                            ? 'bg-[var(--color-error-container)] text-[var(--color-on-error-container)]'
                             : issue.severity === 'high'
-                            ? 'bg-amber-500/30 text-amber-300'
+                            ? 'bg-[var(--color-warning)]/30 text-[var(--color-warning)]'
                             : issue.severity === 'medium'
-                            ? 'bg-[#003640] text-[#4cd7f6]'
-                            : 'bg-[#1b2b3f] text-[#908fa0]'
+                            ? 'bg-[var(--color-on-tertiary)] text-[var(--color-tertiary)]'
+                            : 'bg-[var(--color-surface-container-high)] text-[var(--color-outline)]'
                         }`}
                       >
                         {issue.severity}
@@ -349,7 +349,7 @@ ${jiraModalIssue.diagnostic}
                         onChange={(e) =>
                           onUpdateIssueStatus(issue.id, e.target.value as IssueStatus)
                         }
-                        className="bg-[#031427] border border-[#1b2b3f] text-[#d3e4fe] font-mono text-[11px] px-2 py-1 rounded focus:border-[#8083ff] focus:outline-hidden"
+                        className="bg-[var(--color-surface)] border border-[var(--color-surface-container-high)] text-[var(--color-on-surface)] font-mono text-[11px] px-2 py-1 rounded focus:border-[var(--color-primary-container)] focus:outline-hidden"
                       >
                         <option value="open">Open</option>
                         <option value="in_progress">In Progress</option>
@@ -357,13 +357,13 @@ ${jiraModalIssue.diagnostic}
                         <option value="resolved">Resolved</option>
                       </select>
                     </td>
-                    <td className="p-3.5 font-mono text-[11px] text-[#908fa0]">
+                    <td className="p-3.5 font-mono text-[11px] text-[var(--color-outline)]">
                       {issue.lastSeen}
                     </td>
                     <td className="p-3.5 text-right">
                       <button
                         onClick={() => setJiraModalIssue(issue)}
-                        className="p-1.5 rounded hover:bg-[#102034] text-[#4cd7f6] hover:text-white transition-colors"
+                        className="p-1.5 rounded hover:bg-[var(--color-surface-container)] text-[var(--color-tertiary)] hover:text-[var(--color-on-surface)] transition-colors"
                         title="Open Jira Ticket Exporter"
                       >
                         <span className="material-symbols-outlined text-base">article</span>
@@ -379,12 +379,12 @@ ${jiraModalIssue.diagnostic}
 
       {/* Visual Context & Defect Artifact Preview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl overflow-hidden p-4">
-          <div className="flex items-center justify-between text-xs font-mono text-[#908fa0] mb-2">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl overflow-hidden p-4">
+          <div className="flex items-center justify-between text-xs font-mono text-[var(--color-outline)] mb-2">
             <span>Trace Artifact: Backpack 404</span>
-            <span className="text-[#ffb4ab]">HTTP 404</span>
+            <span className="text-[var(--color-error)]">HTTP 404</span>
           </div>
-          <div className="h-40 bg-[#000f21] rounded-lg overflow-hidden flex items-center justify-center border border-[#1b2b3f]">
+          <div className="h-40 bg-[var(--color-surface-container-lowest)] rounded-lg overflow-hidden flex items-center justify-center border border-[var(--color-surface-container-high)]">
             <img
               alt="Backpack 404 trace"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwLC7MO2uxaaiXptDmhWOC3rI424-IJff7rifcHEl8z7S5G8X_VTNn2JPUbqN4Kc4K4tRsNDTeegnEVNi8RwIxuqfbuAfTY5tMHShn7df_GoSObOT-xwWZEMzb8FDFmyFY4ijFZEUmC1C9DBphd4-EC0bR1lmUZt5NChGsAnPROSvMN68I6Pth4AqzXrI-XrPgE-tV4g9SVweMRMh5x1703duZfwLH02uP8yLmI3UaP79mWn99Rx2TxA"
@@ -392,17 +392,17 @@ ${jiraModalIssue.diagnostic}
               referrerPolicy="no-referrer"
             />
           </div>
-          <p className="font-mono text-[11px] text-[#c7c4d7] mt-2">
+          <p className="font-mono text-[11px] text-[var(--color-on-surface-variant)] mt-2">
             ISS-1042: Scraped from /inventory.html for problem_user
           </p>
         </div>
 
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl overflow-hidden p-4">
-          <div className="flex items-center justify-between text-xs font-mono text-[#908fa0] mb-2">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl overflow-hidden p-4">
+          <div className="flex items-center justify-between text-xs font-mono text-[var(--color-outline)] mb-2">
             <span>Trace Artifact: Step 7 Snapshot</span>
-            <span className="text-[#ffb4ab]">TimeoutError</span>
+            <span className="text-[var(--color-error)]">TimeoutError</span>
           </div>
-          <div className="h-40 bg-[#000f21] rounded-lg overflow-hidden flex items-center justify-center border border-[#1b2b3f]">
+          <div className="h-40 bg-[var(--color-surface-container-lowest)] rounded-lg overflow-hidden flex items-center justify-center border border-[var(--color-surface-container-high)]">
             <img
               alt="Checkout failure snapshot"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7DdDf9mtdG4VP7IEa7ggWzNEg2pfG__de3Qxm8zPJYaZnjz9kDEnyXdsvnxySHMSkTnSmRv-9_AyL3UnGPphg6jB5RN-c7NthOZJ1YcSS3KXkJr2wx5PZDkXLEQubJyUowe07HzOksgDzLHJBh31q4S8gj1HxJiYzhdls4tFT2S1aODbmXh01HY39WsiesQsg3P6TE8eT3gFIpSBAfEqriYLk_tHDJlIBXoWBYrqfoQWf6wDUK1we-A"
@@ -410,17 +410,17 @@ ${jiraModalIssue.diagnostic}
               referrerPolicy="no-referrer"
             />
           </div>
-          <p className="font-mono text-[11px] text-[#c7c4d7] mt-2">
+          <p className="font-mono text-[11px] text-[var(--color-on-surface-variant)] mt-2">
             ISS-1041: #last-name input field locked during fill action
           </p>
         </div>
 
-        <div className="bg-[#0b1c30] border border-[#1b2b3f] rounded-xl overflow-hidden p-4">
-          <div className="flex items-center justify-between text-xs font-mono text-[#908fa0] mb-2">
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl overflow-hidden p-4">
+          <div className="flex items-center justify-between text-xs font-mono text-[var(--color-outline)] mb-2">
             <span>Trace Artifact: Zero Price PDP</span>
-            <span className="text-amber-300">$0.00 Glitch</span>
+            <span className="text-[var(--color-warning)]">$0.00 Glitch</span>
           </div>
-          <div className="h-40 bg-[#000f21] rounded-lg overflow-hidden flex items-center justify-center border border-[#1b2b3f]">
+          <div className="h-40 bg-[var(--color-surface-container-lowest)] rounded-lg overflow-hidden flex items-center justify-center border border-[var(--color-surface-container-high)]">
             <img
               alt="Bolt t-shirt zero price"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoupMFt4CDhqXM0jLZ0C9VWl8L_JcZMEMiPc8NlfLBD1y-PSV4lVmSChzkcGL7rtIF8QBcXNDjFIsFaXZIkDc2p1sMxP2EQbZaEaaaD0Oe2QQ68PoFMPkOlbiF73-K1OwtyzmS758nx4bfcjVBQejOExZwm65hKOSM4-qYo59Nr35BmU8qxHq9VHMcZX5yrMcXE6c0mUUPQSnY2CHoOOouytntXVKGfzPrHPbB-iIYkiy415Z5cKn1zQ"
@@ -428,7 +428,7 @@ ${jiraModalIssue.diagnostic}
               referrerPolicy="no-referrer"
             />
           </div>
-          <p className="font-mono text-[11px] text-[#c7c4d7] mt-2">
+          <p className="font-mono text-[11px] text-[var(--color-on-surface-variant)] mt-2">
             ISS-1039: Scraped price returns zero value on PDP navigation
           </p>
         </div>
@@ -436,19 +436,19 @@ ${jiraModalIssue.diagnostic}
 
       {/* Jira Export Modal */}
       {jiraModalIssue && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#000f21]/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-[#0b1c30] border border-[#26364a] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-surface-container-lowest)]/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-xl shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="px-5 py-4 bg-[#102034] border-b border-[#26364a] flex items-center justify-between">
+            <div className="px-5 py-4 bg-[var(--color-surface-container)] border-b border-[var(--color-surface-container-highest)] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#8083ff] text-xl">
+                <span className="material-symbols-outlined text-[var(--color-primary-container)] text-xl">
                   confirmation_number
                 </span>
                 <div>
-                  <h3 className="font-headline-md text-base font-bold text-[#d3e4fe]">
+                  <h3 className="font-headline-md text-base font-bold text-[var(--color-on-surface)]">
                     Jira Defect Ticket Exporter
                   </h3>
-                  <p className="font-code-sm text-xs text-[#908fa0]">
+                  <p className="font-code-sm text-xs text-[var(--color-outline)]">
                     Generated from SauceDemo telemetry for {jiraModalIssue.id}
                   </p>
                 </div>
@@ -456,22 +456,22 @@ ${jiraModalIssue.diagnostic}
 
               <button
                 onClick={() => setJiraModalIssue(null)}
-                className="p-1 text-[#908fa0] hover:text-white"
+                className="p-1 text-[var(--color-outline)] hover:text-[var(--color-on-surface)]"
               >
                 <span className="material-symbols-outlined text-lg">close</span>
               </button>
             </div>
 
             {/* Format Picker Tabs */}
-            <div className="px-5 pt-3 bg-[#031427] border-b border-[#1b2b3f] flex items-center gap-2">
+            <div className="px-5 pt-3 bg-[var(--color-surface)] border-b border-[var(--color-surface-container-high)] flex items-center gap-2">
               {(['jira', 'markdown', 'json'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setJiraFormatTab(tab)}
                   className={`px-3 py-1.5 text-xs font-mono rounded-t-lg transition-all border-t border-x ${
                     jiraFormatTab === tab
-                      ? 'bg-[#0b1c30] text-[#4cd7f6] border-[#26364a] font-bold'
-                      : 'bg-transparent text-[#908fa0] border-transparent hover:text-white'
+                      ? 'bg-[var(--color-surface-container-low)] text-[var(--color-tertiary)] border-[var(--color-surface-container-highest)] font-bold'
+                      : 'bg-transparent text-[var(--color-outline)] border-transparent hover:text-[var(--color-on-surface)]'
                   }`}
                 >
                   {tab === 'jira'
@@ -484,7 +484,7 @@ ${jiraModalIssue.diagnostic}
             </div>
 
             {/* Content Preview */}
-            <div className="p-5 font-mono text-xs bg-[#000f21] text-[#c7c4d7] max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+            <div className="p-5 font-mono text-xs bg-[var(--color-surface-container-lowest)] text-[var(--color-on-surface-variant)] max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
               {jiraFormatTab === 'jira' ? (
                 <>
                   h2. [SauceDemo] {jiraModalIssue.title}
@@ -524,15 +524,15 @@ ${jiraModalIssue.diagnostic}
             </div>
 
             {/* Modal Actions */}
-            <div className="px-5 py-3 bg-[#102034] border-t border-[#26364a] flex items-center justify-between">
-              <span className="text-xs font-mono text-[#908fa0]">
+            <div className="px-5 py-3 bg-[var(--color-surface-container)] border-t border-[var(--color-surface-container-highest)] flex items-center justify-between">
+              <span className="text-xs font-mono text-[var(--color-outline)]">
                 Ready to paste into Jira issue description
               </span>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopyJira}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#8083ff] text-[#0d0096] text-xs font-bold hover:bg-[#c0c1ff] transition-all cursor-pointer shadow-md"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] text-xs font-bold hover:bg-[var(--color-primary)] transition-all cursor-pointer shadow-md"
                 >
                   <span className="material-symbols-outlined text-sm">content_copy</span>
                   <span>Copy Ticket Content</span>
@@ -540,7 +540,7 @@ ${jiraModalIssue.diagnostic}
 
                 <button
                   onClick={() => setJiraModalIssue(null)}
-                  className="px-3 py-1.5 rounded-lg bg-[#1b2b3f] hover:bg-[#26364a] text-[#d3e4fe] text-xs font-semibold"
+                  className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-container-high)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] text-xs font-semibold"
                 >
                   Close
                 </button>

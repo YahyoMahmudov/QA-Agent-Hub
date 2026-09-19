@@ -74,114 +74,114 @@ export const RunSuiteModal: React.FC<RunSuiteModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#000f21]/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-[#0b1c30] border border-[#26364a] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-surface-container-lowest)]/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)] rounded-xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-5 py-4 bg-[#102034] border-b border-[#26364a] flex items-center justify-between">
+        <div className="px-5 py-4 bg-[var(--color-surface-container)] border-b border-[var(--color-surface-container-highest)] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#8083ff]/20 text-[#8083ff] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-[var(--color-primary-container)]/20 text-[var(--color-primary-container)] flex items-center justify-center">
               <span className={`material-symbols-outlined text-lg ${isRunning ? 'animate-spin' : ''}`}>
                 {isRunning ? 'sync' : 'terminal'}
               </span>
             </div>
             <div>
-              <h3 className="font-headline-md text-base font-bold text-[#d3e4fe]">
+              <h3 className="font-headline-md text-base font-bold text-[var(--color-on-surface)]">
                 Playwright Full Suite Runner
               </h3>
-              <p className="font-code-sm text-xs text-[#908fa0]">
+              <p className="font-code-sm text-xs text-[var(--color-outline)]">
                 Chromium 124 Headless • 4 Workers Parallel
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-[#26364a] text-[#c7c4d7] hover:text-white"
+            className="p-1 rounded-lg hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]"
           >
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
         </div>
 
         {/* Progress Bar & Status */}
-        <div className="p-5 border-b border-[#1b2b3f] bg-[#031427]/60">
+        <div className="p-5 border-b border-[var(--color-surface-container-high)] bg-[var(--color-surface)]/60">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-[#c7c4d7] font-code-sm flex items-center gap-1.5 truncate max-w-sm">
-              <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse"></span>
+            <span className="text-[var(--color-on-surface-variant)] font-code-sm flex items-center gap-1.5 truncate max-w-sm">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] animate-pulse"></span>
               {currentTest}
             </span>
-            <span className="font-mono font-bold text-[#4cd7f6]">{progress}%</span>
+            <span className="font-mono font-bold text-[var(--color-tertiary)]">{progress}%</span>
           </div>
 
-          <div className="w-full bg-[#1b2b3f] h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-[var(--color-surface-container-high)] h-2 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#4cd7f6] via-[#8083ff] to-[#4edea3] transition-all duration-300 rounded-full"
+              className="h-full bg-gradient-to-r from-[var(--color-tertiary)] via-[var(--color-primary-container)] to-[var(--color-secondary)] transition-all duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
 
           <div className="flex items-center justify-between mt-3 text-xs font-code-sm">
             <div className="flex items-center gap-3">
-              <span className="text-[#4edea3] font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3]"></span>
+              <span className="text-[var(--color-secondary)] font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-secondary)]"></span>
                 {passedCount} Passed
               </span>
-              <span className="text-[#ffb4ab] font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ffb4ab]"></span>
+              <span className="text-[var(--color-error)] font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-error)]"></span>
                 {failedCount} Failed
               </span>
             </div>
-            <span className="text-[#908fa0]">{currentWorker}</span>
+            <span className="text-[var(--color-outline)]">{currentWorker}</span>
           </div>
         </div>
 
         {/* Console Log Stream */}
-        <div className="p-4 bg-[#000f21] font-code-sm text-xs text-[#c7c4d7] max-h-60 overflow-y-auto space-y-1 font-mono">
+        <div className="p-4 bg-[var(--color-surface-container-lowest)] font-code-sm text-xs text-[var(--color-on-surface-variant)] max-h-60 overflow-y-auto space-y-1 font-mono">
           {logs.map((log, index) => (
             <div
               key={index}
               className={`leading-relaxed ${
                 log.includes('[FAIL]')
-                  ? 'text-[#ffb4ab] bg-[#93000a]/20 px-2 py-0.5 rounded'
+                  ? 'text-[var(--color-error)] bg-[var(--color-error-container)]/20 px-2 py-0.5 rounded'
                   : log.includes('[PASS]')
-                  ? 'text-[#4edea3]'
+                  ? 'text-[var(--color-secondary)]'
                   : log.includes('[SUMMARY]')
-                  ? 'text-[#4cd7f6] font-bold'
-                  : 'text-[#908fa0]'
+                  ? 'text-[var(--color-tertiary)] font-bold'
+                  : 'text-[var(--color-outline)]'
               }`}
             >
               {log}
             </div>
           ))}
           {isRunning && (
-            <div className="flex items-center gap-2 text-[#4cd7f6] animate-pulse">
+            <div className="flex items-center gap-2 text-[var(--color-tertiary)] animate-pulse">
               <span>› Executing worker step...</span>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 bg-[#102034] border-t border-[#26364a] flex items-center justify-between">
-          <span className="text-xs font-code-sm text-[#908fa0]">
-            Database: <code className="text-[#4cd7f6]">local_qa_vault.db</code> (Realtime WAL)
+        <div className="px-5 py-3 bg-[var(--color-surface-container)] border-t border-[var(--color-surface-container-highest)] flex items-center justify-between">
+          <span className="text-xs font-code-sm text-[var(--color-outline)]">
+            Database: <code className="text-[var(--color-tertiary)]">local_qa_vault.db</code> (Realtime WAL)
           </span>
           <div className="flex items-center gap-2">
             {isRunning ? (
               <button
                 onClick={() => setIsRunning(false)}
-                className="px-3 py-1.5 rounded bg-[#93000a] text-[#ffdad6] text-xs font-semibold hover:bg-red-800"
+                className="px-3 py-1.5 rounded bg-[var(--color-error-container)] text-[var(--color-on-error-container)] text-xs font-semibold hover:bg-red-800"
               >
                 Abort Suite
               </button>
             ) : (
               <button
                 onClick={startRun}
-                className="px-3 py-1.5 rounded bg-[#1b2b3f] hover:bg-[#26364a] text-[#d3e4fe] text-xs font-semibold"
+                className="px-3 py-1.5 rounded bg-[var(--color-surface-container-high)] hover:bg-[var(--color-surface-container-highest)] text-[var(--color-on-surface)] text-xs font-semibold"
               >
                 Rerun Suite
               </button>
             )}
             <button
               onClick={onClose}
-              className="px-4 py-1.5 rounded bg-[#8083ff] text-[#0d0096] text-xs font-bold hover:bg-[#c0c1ff]"
+              className="px-4 py-1.5 rounded bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] text-xs font-bold hover:bg-[var(--color-primary)]"
             >
               Done
             </button>
