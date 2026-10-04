@@ -13,7 +13,10 @@ suiteRouter.post('/run', async (_req, res, next) => {
   // local process) can't survive there. On Vercel, run the suite with an
   // in-process headless browser and hold the response open until it's
   // fully done and persisted, instead of returning a runId early.
-  if (process.env.VERCEL === '1') {
+  // RUN_SUITE_IN_PROCESS is a plain project env var (set only on Vercel),
+  // not Vercel's auto-injected VERCEL=1 - that one depends on a per-project
+  // "expose system env vars" toggle, which turned out to be off here.
+  if (process.env.RUN_SUITE_IN_PROCESS === '1') {
     try {
       const result = await runSuiteServerless();
       res.status(200).json({ runId: randomUUID(), completed: true, ...result });
