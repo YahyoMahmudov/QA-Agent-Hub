@@ -145,47 +145,54 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
 
   const results: TestEndEvent[] = [];
 
-  try {
-    // sparticuz's Chromium launches with --single-process (visible in its
-    // args), which isn't built to host many truly-concurrent pages inside a
-    // memory-constrained Lambda - running all cases via Promise.all crashed
-    // the browser mid-suite. Running them one at a time is far more
-    // reliable here and still comfortably fits the function's time budget.
-    for (const testCase of CASES) {
-      const context = await browser.newContext({ baseURL: BASE_URL });
-      const page = await context.newPage();
-      const start = Date.now();
+  async function runOneCase(testCase: SuiteCase): Promise<void> {
+    const context = await browser.newContext({ baseURL: BASE_URL });
+    const page = await context.newPage();
+    const start = Date.now();
+    try {
+      await testCase.run(page);
+      results.push({
+        type: 'test-end',
+        title: testCase.title,
+        file: testCase.file,
+        line: 0,
+        status: 'passed',
+        duration: Date.now() - start,
+        error: null,
+        retry: 0,
+      });
+    } catch (err) {
+      results.push({
+        type: 'test-end',
+        title: testCase.title,
+        file: testCase.file,
+        line: 0,
+        status: 'failed',
+        duration: Date.now() - start,
+        error: (err as Error).message,
+        retry: 0,
+      });
+    } finally {
       try {
-        await testCase.run(page);
-        results.push({
-          type: 'test-end',
-          title: testCase.title,
-          file: testCase.file,
-          line: 0,
-          status: 'passed',
-          duration: Date.now() - start,
-          error: null,
-          retry: 0,
-        });
-      } catch (err) {
-        results.push({
-          type: 'test-end',
-          title: testCase.title,
-          file: testCase.file,
-          line: 0,
-          status: 'failed',
-          duration: Date.now() - start,
-          error: (err as Error).message,
-          retry: 0,
-        });
-      } finally {
-        try {
-          await context.close();
-        } catch {
-          // Browser may already be gone if a prior case crashed it - the
-          // result above is already recorded either way, so just move on.
-        }
+        await context.close();
+      } catch {
+        // Browser may already be gone if a prior case crashed it - the
+        // result above is already recorded either way, so just move on.
       }
+    }
+  }
+
+  try {
+    // Fully sequential (1 at a time) was crash-safe but too slow to fit
+    // this plan's hard 60s function timeout (8 real-network cases took
+    // well over a minute). Fully concurrent (all 8 via Promise.all) ran
+    // sparticuz's --single-process Chromium out of memory. Small batches
+    // split the difference: enough concurrency to fit the time budget,
+    // small enough per batch to stay memory-safe.
+    const BATCH_SIZE = 4;
+    for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
+      const batch = CASES.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map(runOneCase));
     }
   } finally {
     try {
