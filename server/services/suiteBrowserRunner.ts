@@ -14,17 +14,21 @@ import { readdir, rm } from 'fs/promises';
 import path from 'path';
 
 // A warm Lambda container can be reused across invocations, and each prior
-// run (crashed or not) leaves its extracted Chromium binary and browser
-// profile dir behind in /tmp. Across enough reused invocations that fills
-// the (512MB) /tmp budget entirely - seen directly in Chromium's own stderr
-// ("Less than 64MB of free space ... for shared memory files: 0"). Clear
-// known sparticuz/playwright temp paths before each run so it starts clean.
+// run (crashed or not) leaves its own randomly-suffixed browser profile dir
+// (with its own cache, up to --disk-cache-size each) behind in /tmp. Across
+// enough reused invocations that fills the (512MB) /tmp budget entirely -
+// seen directly in Chromium's own stderr ("Less than 64MB of free space
+// ... for shared memory files: 0"). Deliberately NOT touching the extracted
+// chromium* binary itself here - @sparticuz/chromium's executablePath()
+// detects and reuses it if already extracted on a warm container, which is
+// a meaningful speed win worth keeping; only the profile dirs are genuine
+// per-invocation garbage.
 async function cleanupTmp(): Promise<void> {
   try {
     const entries = await readdir('/tmp');
     await Promise.all(
       entries
-        .filter((name) => name.startsWith('chromium') || name.startsWith('playwright_chromiumdev_profile-'))
+        .filter((name) => name.startsWith('playwright_chromiumdev_profile-'))
         .map((name) => rm(path.join('/tmp', name), { recursive: true, force: true }).catch(() => {}))
     );
   } catch {
