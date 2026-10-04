@@ -194,13 +194,12 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
   }
 
   try {
-    // Fully sequential (1 at a time) was crash-safe but too slow to fit
-    // this plan's hard 60s function timeout (8 real-network cases took
-    // well over a minute). Fully concurrent (all 8 via Promise.all) ran
-    // sparticuz's --single-process Chromium out of memory. Small batches
-    // split the difference: enough concurrency to fit the time budget,
-    // small enough per batch to stay memory-safe.
-    const BATCH_SIZE = 4;
+    // The earlier full-concurrency crash was caused by --single-process
+    // (see launch() above), not concurrency itself - normal multi-process
+    // Chromium is designed to host many pages at once. With that flag
+    // gone, run everything in one batch to fit the plan's hard 60s cap;
+    // 4-way batching alone was stable but still timed out.
+    const BATCH_SIZE = CASES.length;
     for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
       const batch = CASES.slice(i, i + BATCH_SIZE);
       await Promise.all(batch.map(runOneCase));
