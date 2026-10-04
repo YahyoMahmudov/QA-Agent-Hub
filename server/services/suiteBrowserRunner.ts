@@ -164,16 +164,9 @@ const CASES: SuiteCase[] = [
 export async function runSuiteServerless(): Promise<{ passed: number; failed: number; total: number }> {
   await cleanupTmp();
 
-  // sparticuz/chromium's default args include --single-process and
-  // --no-zygote, which are tuned for Puppeteer's single-page-at-a-time
-  // use case. Under Playwright, that combination was crashing Chromium
-  // immediately after launch (process starts, then the first CDP command
-  // - newPage - fails with "Target ... has been closed"), consistently,
-  // regardless of memory. Playwright handles normal multi-process
-  // Chromium fine, so drop those two flags and let it run multi-process.
-  const args = sparticuzChromium.args.filter(
-    (arg) => arg !== '--single-process' && arg !== '--no-zygote'
-  );
+  // Use sparticuz's args unmodified: they include --single-process, which
+  // this sandbox needs - without it the renderer dies with "Target crashed".
+  const args = sparticuzChromium.args;
 
   const t0 = Date.now();
   const executablePath = await sparticuzChromium.executablePath();
@@ -227,14 +220,9 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
   }
 
   try {
-    // The earlier full-8-way crash traced back to /tmp exhaustion (fixed
-    // above via cleanupTmp()), not 8-way concurrency being inherently too
-    // much for the sandbox - that crash cause is gone now, and every batch
-    // size tried (sequential, 4, 6) was consistently too slow for the 60s
-    // cap, all network-bound against the same remote site. Full
-    // concurrency is both the fastest option and, with /tmp now fixed,
-    // deserves a fair retest rather than an artificial cap.
-    const BATCH_SIZE = 4;
+    // One case at a time: single-process Chromium is not reliable with
+    // several pages open at once.
+    const BATCH_SIZE = 1;
     for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
       const batch = CASES.slice(i, i + BATCH_SIZE);
       const tb = Date.now();
