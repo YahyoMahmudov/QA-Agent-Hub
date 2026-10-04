@@ -234,7 +234,7 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
     // cap, all network-bound against the same remote site. Full
     // concurrency is both the fastest option and, with /tmp now fixed,
     // deserves a fair retest rather than an artificial cap.
-    const BATCH_SIZE = CASES.length;
+    const BATCH_SIZE = 4;
     for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
       const batch = CASES.slice(i, i + BATCH_SIZE);
       const tb = Date.now();
