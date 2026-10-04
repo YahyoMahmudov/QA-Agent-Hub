@@ -10,6 +10,27 @@ import { chromium as playwrightChromium } from 'playwright-core';
 import type { Page } from 'playwright-core';
 import sparticuzChromium from '@sparticuz/chromium';
 import { expect } from '@playwright/test';
+import { readdir, rm } from 'fs/promises';
+import path from 'path';
+
+// A warm Lambda container can be reused across invocations, and each prior
+// run (crashed or not) leaves its extracted Chromium binary and browser
+// profile dir behind in /tmp. Across enough reused invocations that fills
+// the (512MB) /tmp budget entirely - seen directly in Chromium's own stderr
+// ("Less than 64MB of free space ... for shared memory files: 0"). Clear
+// known sparticuz/playwright temp paths before each run so it starts clean.
+async function cleanupTmp(): Promise<void> {
+  try {
+    const entries = await readdir('/tmp');
+    await Promise.all(
+      entries
+        .filter((name) => name.startsWith('chromium') || name.startsWith('playwright_chromiumdev_profile-'))
+        .map((name) => rm(path.join('/tmp', name), { recursive: true, force: true }).catch(() => {}))
+    );
+  } catch {
+    // /tmp unreadable or doesn't exist (e.g. local non-Linux dev) - nothing to clean.
+  }
+}
 import { persistSuiteRun, type TestEndEvent } from './suite.service.js';
 
 const BASE_URL = 'https://www.saucedemo.com';
@@ -137,6 +158,8 @@ const CASES: SuiteCase[] = [
 ];
 
 export async function runSuiteServerless(): Promise<{ passed: number; failed: number; total: number }> {
+  await cleanupTmp();
+
   // sparticuz/chromium's default args include --single-process and
   // --no-zygote, which are tuned for Puppeteer's single-page-at-a-time
   // use case. Under Playwright, that combination was crashing Chromium
@@ -221,6 +244,7 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
     } catch {
       // Already closed/crashed - nothing more to do.
     }
+    await cleanupTmp();
   }
   console.log(`[suite-timing] all batches done, total ${Date.now() - t0}ms before persist`);
 
