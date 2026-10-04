@@ -227,13 +227,14 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
   }
 
   try {
-    // Multi-process Chromium (no --single-process) is stable at 4-way
-    // concurrency but just missed the 60s cap; a full 8-way burst crashes
-    // it again (too many processes spawned at once for this sandbox,
-    // separately from the --single-process issue). 6 splits the
-    // difference: fewer simultaneous process spawns than 8, faster than
-    // two sequential batches of 4.
-    const BATCH_SIZE = 6;
+    // The earlier full-8-way crash traced back to /tmp exhaustion (fixed
+    // above via cleanupTmp()), not 8-way concurrency being inherently too
+    // much for the sandbox - that crash cause is gone now, and every batch
+    // size tried (sequential, 4, 6) was consistently too slow for the 60s
+    // cap, all network-bound against the same remote site. Full
+    // concurrency is both the fastest option and, with /tmp now fixed,
+    // deserves a fair retest rather than an artificial cap.
+    const BATCH_SIZE = CASES.length;
     for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
       const batch = CASES.slice(i, i + BATCH_SIZE);
       const tb = Date.now();
