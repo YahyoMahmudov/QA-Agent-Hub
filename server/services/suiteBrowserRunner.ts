@@ -148,11 +148,17 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
     (arg) => arg !== '--single-process' && arg !== '--no-zygote'
   );
 
+  const t0 = Date.now();
+  const executablePath = await sparticuzChromium.executablePath();
+  console.log(`[suite-timing] executablePath resolved in ${Date.now() - t0}ms`);
+
+  const t1 = Date.now();
   const browser = await playwrightChromium.launch({
     args,
-    executablePath: await sparticuzChromium.executablePath(),
+    executablePath,
     headless: true,
   });
+  console.log(`[suite-timing] browser launched in ${Date.now() - t1}ms (total so far ${Date.now() - t0}ms)`);
 
   const results: TestEndEvent[] = [];
 
@@ -203,7 +209,11 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
     const BATCH_SIZE = 6;
     for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
       const batch = CASES.slice(i, i + BATCH_SIZE);
+      const tb = Date.now();
       await Promise.all(batch.map(runOneCase));
+      console.log(
+        `[suite-timing] batch ${i}-${i + batch.length - 1} finished in ${Date.now() - tb}ms (total so far ${Date.now() - t0}ms)`
+      );
     }
   } finally {
     try {
@@ -212,6 +222,7 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
       // Already closed/crashed - nothing more to do.
     }
   }
+  console.log(`[suite-timing] all batches done, total ${Date.now() - t0}ms before persist`);
 
   await persistSuiteRun(results);
 
