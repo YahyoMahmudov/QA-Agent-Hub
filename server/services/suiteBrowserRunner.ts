@@ -137,8 +137,19 @@ const CASES: SuiteCase[] = [
 ];
 
 export async function runSuiteServerless(): Promise<{ passed: number; failed: number; total: number }> {
+  // sparticuz/chromium's default args include --single-process and
+  // --no-zygote, which are tuned for Puppeteer's single-page-at-a-time
+  // use case. Under Playwright, that combination was crashing Chromium
+  // immediately after launch (process starts, then the first CDP command
+  // - newPage - fails with "Target ... has been closed"), consistently,
+  // regardless of memory. Playwright handles normal multi-process
+  // Chromium fine, so drop those two flags and let it run multi-process.
+  const args = sparticuzChromium.args.filter(
+    (arg) => arg !== '--single-process' && arg !== '--no-zygote'
+  );
+
   const browser = await playwrightChromium.launch({
-    args: sparticuzChromium.args,
+    args,
     executablePath: await sparticuzChromium.executablePath(),
     headless: true,
   });
