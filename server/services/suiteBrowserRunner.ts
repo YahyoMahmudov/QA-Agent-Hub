@@ -7,7 +7,7 @@
 // process.env.VERCEL is set; local dev keeps using the full `playwright
 // test` CLI via suite.service.ts's startSuiteRun(), unchanged.
 import { chromium as playwrightChromium } from 'playwright-core';
-import type { Page } from 'playwright-core';
+import type { Browser, Page } from 'playwright-core';
 import sparticuzChromium from '@sparticuz/chromium';
 import { expect } from '@playwright/test';
 import { readdir, rm } from 'fs/promises';
@@ -172,74 +172,62 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
   const executablePath = await sparticuzChromium.executablePath();
   console.log(`[suite-timing] executablePath resolved in ${Date.now() - t0}ms`);
 
-  const t1 = Date.now();
-  const browser = await playwrightChromium.launch({
-    args,
-    executablePath,
-    headless: true,
-  });
-  console.log(`[suite-timing] browser launched in ${Date.now() - t1}ms (total so far ${Date.now() - t0}ms)`);
-
   const results: TestEndEvent[] = [];
+  const CASE_TIMEOUT_MS = 30_000;
 
+  function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+    let timer: NodeJS.Timeout;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+
+  // One fresh browser per case. In --single-process mode, closing a context
+  // takes the whole browser down, so a shared browser left the second case
+  // waiting forever on a dead process. A launch costs ~100ms once the binary
+  // is extracted, so relaunching is cheap. Every step is time-boxed so a
+  // stuck browser fails that one case instead of hanging the function.
   async function runOneCase(testCase: SuiteCase): Promise<void> {
-    const context = await browser.newContext({ baseURL: BASE_URL });
-    const page = await context.newPage();
     const start = Date.now();
+    let browser: Browser | undefined;
+    let status: TestEndEvent['status'] = 'passed';
+    let error: string | null = null;
     try {
-      await testCase.run(page);
-      results.push({
-        type: 'test-end',
-        title: testCase.title,
-        file: testCase.file,
-        line: 0,
-        status: 'passed',
-        duration: Date.now() - start,
-        error: null,
-        retry: 0,
-      });
+      await withTimeout(
+        (async () => {
+          browser = await playwrightChromium.launch({ args, executablePath, headless: true });
+          const context = await browser.newContext({ baseURL: BASE_URL });
+          const page = await context.newPage();
+          await testCase.run(page);
+        })(),
+        CASE_TIMEOUT_MS,
+        'case'
+      );
     } catch (err) {
-      results.push({
-        type: 'test-end',
-        title: testCase.title,
-        file: testCase.file,
-        line: 0,
-        status: 'failed',
-        duration: Date.now() - start,
-        error: (err as Error).message,
-        retry: 0,
-      });
+      status = 'failed';
+      error = (err as Error).message;
     } finally {
-      try {
-        await context.close();
-      } catch {
-        // Browser may already be gone if a prior case crashed it - the
-        // result above is already recorded either way, so just move on.
+      const launched = browser as Browser | undefined;
+      if (launched) {
+        await withTimeout(launched.close(), 5_000, 'browser.close').catch(() => {});
       }
     }
+    const duration = Date.now() - start;
+    console.log(
+      `[suite-case] ${status} in ${duration}ms: ${testCase.title}${error ? ` :: ${error.split('\n')[0]}` : ''}`
+    );
+    results.push({ type: 'test-end', title: testCase.title, file: testCase.file, line: 0, status, duration, error, retry: 0 });
   }
 
   try {
-    // One case at a time: single-process Chromium is not reliable with
-    // several pages open at once.
-    const BATCH_SIZE = 1;
-    for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
-      const batch = CASES.slice(i, i + BATCH_SIZE);
-      const tb = Date.now();
-      await Promise.all(batch.map(runOneCase));
-      console.log(
-        `[suite-timing] batch ${i}-${i + batch.length - 1} finished in ${Date.now() - tb}ms (total so far ${Date.now() - t0}ms)`
-      );
+    for (const testCase of CASES) {
+      await runOneCase(testCase);
     }
   } finally {
-    try {
-      await browser.close();
-    } catch {
-      // Already closed/crashed - nothing more to do.
-    }
     await cleanupTmp();
   }
-  console.log(`[suite-timing] all batches done, total ${Date.now() - t0}ms before persist`);
+  console.log(`[suite-timing] all cases done, total ${Date.now() - t0}ms before persist`);
 
   await persistSuiteRun(results);
 
