@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { EventEmitter } from 'events';
 import { randomUUID } from 'crypto';
-import { supabase, nowIso, assertNoError } from '../db';
+import { supabase, nowIso, assertNoError } from '../db/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

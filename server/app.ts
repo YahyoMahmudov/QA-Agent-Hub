@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { issuesRouter } from './routes/issues';
-import { pinsRouter } from './routes/pins';
-import { dashboardRouter } from './routes/dashboard';
-import { scraperRouter } from './routes/scraper';
-import { suiteRouter } from './routes/suite';
-import { aiRouter } from './routes/ai';
+import { issuesRouter } from './routes/issues.js';
+import { pinsRouter } from './routes/pins.js';
+import { dashboardRouter } from './routes/dashboard.js';
+import { scraperRouter } from './routes/scraper.js';
+import { suiteRouter } from './routes/suite.js';
+import { aiRouter } from './routes/ai.js';
 
 export const app = express();
 

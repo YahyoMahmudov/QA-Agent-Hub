@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { supabase, nowIso, assertNoError } from '../db';
-import { runContentScrape, toInventoryItems, type ScraperOptions } from '../services/scraper.service';
+import { supabase, nowIso, assertNoError } from '../db/index.js';
+import { runContentScrape, toInventoryItems, type ScraperOptions } from '../services/scraper.service.js';
 
 export const scraperRouter = Router();
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase, timeAgo, assertNoError } from '../db';
+import { supabase, timeAgo, assertNoError } from '../db/index.js';
 
 export const dashboardRouter = Router();
 

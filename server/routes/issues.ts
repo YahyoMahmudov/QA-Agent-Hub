@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase, nowIso, timeAgo, assertNoError } from '../db';
+import { supabase, nowIso, timeAgo, assertNoError } from '../db/index.js';
 import type { DefectIssue } from '../../src/types';
 
 export const issuesRouter = Router();

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { supabase, assertNoError } from '../db';
-import { triageDefect, isGeminiConfigured } from '../services/gemini.service';
+import { supabase, assertNoError } from '../db/index.js';
+import { triageDefect, isGeminiConfigured } from '../services/gemini.service.js';
 
 export const aiRouter = Router();
 

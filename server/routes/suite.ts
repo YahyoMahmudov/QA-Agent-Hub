@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { supabase, timeAgo, assertNoError } from '../db';
-import { startSuiteRun, getSuiteEmitter, getSuiteState } from '../services/suite.service';
+import { supabase, timeAgo, assertNoError } from '../db/index.js';
+import { startSuiteRun, getSuiteEmitter, getSuiteState } from '../services/suite.service.js';
 import type { TestRunItem } from '../../src/types';
 
 export const suiteRouter = Router();
