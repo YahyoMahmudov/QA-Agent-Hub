@@ -194,12 +194,13 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
   }
 
   try {
-    // The earlier full-concurrency crash was caused by --single-process
-    // (see launch() above), not concurrency itself - normal multi-process
-    // Chromium is designed to host many pages at once. With that flag
-    // gone, run everything in one batch to fit the plan's hard 60s cap;
-    // 4-way batching alone was stable but still timed out.
-    const BATCH_SIZE = CASES.length;
+    // Multi-process Chromium (no --single-process) is stable at 4-way
+    // concurrency but just missed the 60s cap; a full 8-way burst crashes
+    // it again (too many processes spawned at once for this sandbox,
+    // separately from the --single-process issue). 6 splits the
+    // difference: fewer simultaneous process spawns than 8, faster than
+    // two sequential batches of 4.
+    const BATCH_SIZE = 6;
     for (let i = 0; i < CASES.length; i += BATCH_SIZE) {
       const batch = CASES.slice(i, i + BATCH_SIZE);
       await Promise.all(batch.map(runOneCase));
