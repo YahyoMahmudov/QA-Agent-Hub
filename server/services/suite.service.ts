@@ -7,7 +7,7 @@ import { supabase, nowIso, assertNoError } from '../db/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-interface TestEndEvent {
+export interface TestEndEvent {
   type: 'test-end';
   title: string;
   file: string;
@@ -130,7 +130,7 @@ function handleEvent(runId: string, evt: any, emitter: EventEmitter, testResults
   }
 }
 
-async function persistSuiteRun(testResults: TestEndEvent[]) {
+export async function persistSuiteRun(testResults: TestEndEvent[]) {
   if (testResults.length === 0) return;
 
   const now = nowIso();

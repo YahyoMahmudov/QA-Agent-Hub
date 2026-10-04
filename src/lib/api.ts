@@ -118,8 +118,18 @@ export const ScraperApi = {
 };
 
 // ---- Functional test suite ----
+export interface SuiteRunStartResponse {
+  runId: string;
+  // Present when the suite ran to completion synchronously before
+  // responding (the Vercel serverless path, which can't stream progress
+  // the way the local backend's SSE flow does).
+  completed?: boolean;
+  passed?: number;
+  failed?: number;
+  total?: number;
+}
 export const SuiteApi = {
-  start: () => request<{ runId: string }>('/suite/run', { method: 'POST' }),
+  start: () => request<SuiteRunStartResponse>('/suite/run', { method: 'POST' }),
   runs: (limit = 20) => request<TestRunItem[]>(`/suite/runs?limit=${limit}`),
   /** Opens an EventSource against the live run stream; caller owns its lifecycle. */
   stream: (runId: string) => new EventSource(`/api/suite/stream/${runId}`),

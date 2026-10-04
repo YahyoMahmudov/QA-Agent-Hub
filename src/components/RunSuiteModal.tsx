@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { SuiteApi } from '../lib/api';
 
 interface RunSuiteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRunComplete: (newRecords: number) => void;
+  onRunComplete: (passed: number, failed: number) => void;
 }
 
 export const RunSuiteModal: React.FC<RunSuiteModalProps> = ({
@@ -13,62 +14,121 @@ export const RunSuiteModal: React.FC<RunSuiteModalProps> = ({
 }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [currentWorker, setCurrentWorker] = useState('Worker #1 (PID 4912)');
-  const [currentTest, setCurrentTest] = useState('auth.spec.ts:12 > [standard_user] session check');
+  const [currentWorker, setCurrentWorker] = useState('Connecting to backend...');
+  const [currentTest, setCurrentTest] = useState('Spawning Playwright workers...');
   const [logs, setLogs] = useState<string[]>([]);
   const [passedCount, setPassedCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
+  const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       startRun();
     } else {
+      esRef.current?.close();
+      esRef.current = null;
       setIsRunning(false);
       setProgress(0);
       setLogs([]);
     }
+    return () => {
+      esRef.current?.close();
+      esRef.current = null;
+    };
   }, [isOpen]);
 
-  const startRun = () => {
+  const appendLog = (line: string) => setLogs((prev) => [...prev, line]);
+
+  const startRun = async () => {
+    esRef.current?.close();
     setIsRunning(true);
-    setProgress(5);
+    setProgress(2);
     setPassedCount(0);
     setFailedCount(0);
+    setCurrentWorker('4 Chromium Headless workers (real Playwright)');
+    setCurrentTest('Requesting run from backend...');
     setLogs([
-      '[CLUSTER] Spawning 4 Chromium Headless worker threads (Playwright v1.43)...',
-      '[SQLITE WAL] Initialized transaction checkpoint on local_qa_vault.db',
-      '[BROWSER] Navigating to https://www.saucedemo.com with viewport 1920x1080',
+      '[CLUSTER] Requesting real Playwright suite run from backend...',
+      '[SUPABASE] Connected to Postgres instance',
+      '[BROWSER] Target: https://www.saucedemo.com',
     ]);
 
-    const steps = [
-      { p: 20, test: 'auth.spec.ts:08 > [standard_user] verify authentication cookies', log: '[PASS] auth.spec.ts verified cookies (312ms)', pass: true },
-      { p: 40, test: 'cart.spec.ts:15 > [standard_user] multi-item add & cart badge', log: '[PASS] cart.spec.ts 3 items incremented counter (240ms)', pass: true },
-      { p: 60, test: 'checkout.spec.ts:34 > [problem_user] complete checkout', log: '[FAIL] checkout.spec.ts:34 TimeoutError: locator("#last-name").fill() exceeded 5000ms', pass: false },
-      { p: 80, test: 'edge_cases.spec.ts:22 > [locked_out_user] verify 403 sadface banner', log: '[PASS] edge_cases.spec.ts Sadface banner validated (180ms)', pass: true },
-      { p: 100, test: 'audit.spec.ts:90 > [asset_scanner] inventory image hash diff', log: '[SUMMARY] Suite finished: 3 Passed, 1 Failed. Synced +18 audit rows to local.db', pass: true }
-    ];
+    let startResponse: Awaited<ReturnType<typeof SuiteApi.start>>;
+    try {
+      startResponse = await SuiteApi.start();
+    } catch (err) {
+      setIsRunning(false);
+      appendLog(`[ERROR] Failed to start suite: ${(err as Error).message}. Is the backend running (npm run dev:server)?`);
+      return;
+    }
 
-    let currentIdx = 0;
-    const interval = setInterval(() => {
-      if (currentIdx < steps.length) {
-        const step = steps[currentIdx];
-        setProgress(step.p);
-        setCurrentTest(step.test);
-        setLogs((prev) => [...prev, step.log]);
-        if (step.pass) {
-          setPassedCount((c) => c + 1);
-        } else {
-          setFailedCount((c) => c + 1);
-        }
-        currentIdx++;
-      } else {
-        clearInterval(interval);
-        setIsRunning(false);
-        onRunComplete(18);
+    // The deployed (Vercel) backend can't stream progress the way local dev
+    // does, since a serverless function there runs the whole suite to
+    // completion before it ever responds - so the full result lands here
+    // already finished, with no stream to open.
+    if (startResponse.completed) {
+      const passed = startResponse.passed ?? 0;
+      const failed = startResponse.failed ?? 0;
+      setPassedCount(passed);
+      setFailedCount(failed);
+      setProgress(100);
+      setCurrentTest('Run complete');
+      appendLog(`[SUMMARY] Suite finished: ${passed} Passed, ${failed} Failed. Synced results to Supabase.`);
+      setIsRunning(false);
+      onRunComplete(passed, failed);
+      return;
+    }
+
+    const { runId } = startResponse;
+    const es = SuiteApi.stream(runId);
+    esRef.current = es;
+
+    es.onmessage = (event) => {
+      let evt: any;
+      try {
+        evt = JSON.parse(event.data);
+      } catch {
+        return;
       }
-    }, 900);
 
-    return () => clearInterval(interval);
+      if (evt.type === 'begin') {
+        appendLog(`[CLUSTER] Running ${evt.total} specs across 4 workers`);
+      } else if (evt.type === 'test-begin') {
+        setCurrentTest(`${evt.file} > ${evt.title}`);
+      } else if (evt.type === 'test-end') {
+        setProgress(evt.progress);
+        setPassedCount(evt.passed);
+        setFailedCount(evt.failed);
+        const tag = evt.status === 'passed' ? 'PASS' : 'FAIL';
+        appendLog(
+          `[${tag}] ${evt.file} > ${evt.title} (${evt.duration}ms)${evt.error ? ` — ${evt.error}` : ''}`
+        );
+      } else if (evt.type === 'log') {
+        appendLog(evt.text);
+      } else if (evt.type === 'error') {
+        appendLog(`[ERROR] ${evt.message}`);
+      } else if (evt.type === 'end') {
+        appendLog(
+          `[SUMMARY] Suite finished: ${evt.passed} Passed, ${evt.failed} Failed. Synced results to local_qa_vault.db`
+        );
+      } else if (evt.type === 'closed') {
+        setIsRunning(false);
+        setProgress(100);
+        setCurrentTest('Run complete');
+        es.close();
+        esRef.current = null;
+        onRunComplete(evt.passed, evt.failed);
+      }
+    };
+
+    es.onerror = () => {
+      if (esRef.current === es) {
+        setIsRunning(false);
+        appendLog('[ERROR] Lost connection to the live run stream.');
+        es.close();
+        esRef.current = null;
+      }
+    };
   };
 
   if (!isOpen) return null;
@@ -89,7 +149,7 @@ export const RunSuiteModal: React.FC<RunSuiteModalProps> = ({
                 Playwright Full Suite Runner
               </h3>
               <p className="font-code-sm text-xs text-[var(--color-outline)]">
-                Chromium 124 Headless • 4 Workers Parallel
+                Chromium 153 Headless • 4 Workers Parallel
               </p>
             </div>
           </div>
@@ -161,12 +221,17 @@ export const RunSuiteModal: React.FC<RunSuiteModalProps> = ({
         {/* Footer */}
         <div className="px-5 py-3 bg-[var(--color-surface-container)] border-t border-[var(--color-surface-container-highest)] flex items-center justify-between">
           <span className="text-xs font-code-sm text-[var(--color-outline)]">
-            Database: <code className="text-[var(--color-tertiary)]">local_qa_vault.db</code> (Realtime WAL)
+            Database: <code className="text-[var(--color-tertiary)]">Supabase</code> (Postgres)
           </span>
           <div className="flex items-center gap-2">
             {isRunning ? (
               <button
-                onClick={() => setIsRunning(false)}
+                onClick={() => {
+                  esRef.current?.close();
+                  esRef.current = null;
+                  setIsRunning(false);
+                  appendLog('[CLUSTER] Detached from run stream (backend continues to completion in the background).');
+                }}
                 className="px-3 py-1.5 rounded bg-[var(--color-error-container)] text-[var(--color-on-error-container)] text-xs font-semibold hover:bg-red-800"
               >
                 Abort Suite

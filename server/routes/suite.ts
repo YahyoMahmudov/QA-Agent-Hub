@@ -1,11 +1,28 @@
 import { Router } from 'express';
+import { randomUUID } from 'crypto';
 import { supabase, timeAgo, assertNoError } from '../db/index.js';
 import { startSuiteRun, getSuiteEmitter, getSuiteState } from '../services/suite.service.js';
+import { runSuiteServerless } from '../services/suiteBrowserRunner.js';
 import type { TestRunItem } from '../../src/types';
 
 export const suiteRouter = Router();
 
-suiteRouter.post('/run', (_req, res) => {
+suiteRouter.post('/run', async (_req, res, next) => {
+  // Vercel freezes the function right after the response is sent, so the
+  // existing spawn-and-stream-via-SSE flow below (built for a long-lived
+  // local process) can't survive there. On Vercel, run the suite with an
+  // in-process headless browser and hold the response open until it's
+  // fully done and persisted, instead of returning a runId early.
+  if (process.env.VERCEL === '1') {
+    try {
+      const result = await runSuiteServerless();
+      res.status(200).json({ runId: randomUUID(), completed: true, ...result });
+    } catch (err) {
+      next(err);
+    }
+    return;
+  }
+
   const runId = startSuiteRun();
   res.status(202).json({ runId });
 });
