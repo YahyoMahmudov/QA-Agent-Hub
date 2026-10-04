@@ -146,41 +146,53 @@ export async function runSuiteServerless(): Promise<{ passed: number; failed: nu
   const results: TestEndEvent[] = [];
 
   try {
-    await Promise.all(
-      CASES.map(async (testCase) => {
-        const context = await browser.newContext({ baseURL: BASE_URL });
-        const page = await context.newPage();
-        const start = Date.now();
+    // sparticuz's Chromium launches with --single-process (visible in its
+    // args), which isn't built to host many truly-concurrent pages inside a
+    // memory-constrained Lambda - running all cases via Promise.all crashed
+    // the browser mid-suite. Running them one at a time is far more
+    // reliable here and still comfortably fits the function's time budget.
+    for (const testCase of CASES) {
+      const context = await browser.newContext({ baseURL: BASE_URL });
+      const page = await context.newPage();
+      const start = Date.now();
+      try {
+        await testCase.run(page);
+        results.push({
+          type: 'test-end',
+          title: testCase.title,
+          file: testCase.file,
+          line: 0,
+          status: 'passed',
+          duration: Date.now() - start,
+          error: null,
+          retry: 0,
+        });
+      } catch (err) {
+        results.push({
+          type: 'test-end',
+          title: testCase.title,
+          file: testCase.file,
+          line: 0,
+          status: 'failed',
+          duration: Date.now() - start,
+          error: (err as Error).message,
+          retry: 0,
+        });
+      } finally {
         try {
-          await testCase.run(page);
-          results.push({
-            type: 'test-end',
-            title: testCase.title,
-            file: testCase.file,
-            line: 0,
-            status: 'passed',
-            duration: Date.now() - start,
-            error: null,
-            retry: 0,
-          });
-        } catch (err) {
-          results.push({
-            type: 'test-end',
-            title: testCase.title,
-            file: testCase.file,
-            line: 0,
-            status: 'failed',
-            duration: Date.now() - start,
-            error: (err as Error).message,
-            retry: 0,
-          });
-        } finally {
           await context.close();
+        } catch {
+          // Browser may already be gone if a prior case crashed it - the
+          // result above is already recorded either way, so just move on.
         }
-      })
-    );
+      }
+    }
   } finally {
-    await browser.close();
+    try {
+      await browser.close();
+    } catch {
+      // Already closed/crashed - nothing more to do.
+    }
   }
 
   await persistSuiteRun(results);
