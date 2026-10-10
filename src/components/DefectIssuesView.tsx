@@ -86,7 +86,7 @@ Selector: ${jiraModalIssue.locator || 'N/A'}
 {code}
 
 h3. Reproduction Steps
-# Launch Chromium 124 Headless via Playwright
+# Launch Chromium 153 Headless via Playwright
 # Authenticate with persona: ${jiraModalIssue.persona || 'problem_user'} / secret_sauce
 # Navigate to target route: /${jiraModalIssue.area.toLowerCase().replace(' ', '-')}.html
 # Observe assertion failure or broken HTTP response status code
@@ -499,7 +499,7 @@ ${jiraModalIssue.diagnostic}
                   {'\n'}Selector: {jiraModalIssue.locator || 'N/A'}
                   {'\n'}&#123;code&#125;
                   {'\n\n'}h3. Reproduction Steps
-                  {'\n'}# Launch Chromium 124 Headless via Playwright
+                  {'\n'}# Launch Chromium 153 Headless via Playwright
                   {'\n'}# Authenticate with persona: {jiraModalIssue.persona || 'problem_user'}
                   {'\n'}# Navigate to target route: /{jiraModalIssue.area.toLowerCase().replace(' ', '-')}.html
                   {'\n'}# Observe assertion failure or broken HTTP response status code

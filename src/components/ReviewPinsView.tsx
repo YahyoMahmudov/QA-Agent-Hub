@@ -3,7 +3,7 @@ import { ReviewPin, IssueSeverity } from '../types';
 
 interface ReviewPinsViewProps {
   pins: ReviewPin[];
-  onAddPin: (pin: ReviewPin) => void;
+  onAddPin: (pin: Omit<ReviewPin, 'id' | 'timeAgo'>) => void;
   onShowToast: (message: string, icon?: string) => void;
   onNavigateToIssues: () => void;
 }
@@ -39,8 +39,7 @@ export const ReviewPinsView: React.FC<ReviewPinsViewProps> = ({
       return;
     }
 
-    const newPin: ReviewPin = {
-      id: `#PIN-0${pins.length + 1}`,
+    const newPin: Omit<ReviewPin, 'id' | 'timeAgo'> = {
       title: newTitle,
       description: newDescription || 'Manual visual inspection pin recorded during QA audit.',
       xpath: `//${newSelector.replace('.', '[@class="')}"]`,
@@ -48,18 +47,15 @@ export const ReviewPinsView: React.FC<ReviewPinsViewProps> = ({
       page: 'PLP',
       severity: newSeverity,
       author: 'Sarah (Lead QA)',
-      timeAgo: 'Just now',
       status: 'open',
       jiraKey: `PROJ-${1043 + pins.length}`,
       coords: { x: 300, y: 200 },
     };
 
     onAddPin(newPin);
-    setSelectedPinId(newPin.id);
     setNewTitle('');
     setNewDescription('');
     setIsDropMode(false);
-    onShowToast(`Created review pin ${newPin.id}: "${newPin.title}"`, 'push_pin');
   };
 
   const filteredPins = pins.filter((p) => {

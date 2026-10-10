@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InventoryInspectionItem, UserPersona } from '../types';
-import { INVENTORY_ITEMS } from '../data/mockData';
+import { ScraperApi } from '../lib/api';
 
 interface ContentScraperViewProps {
   onShowToast: (message: string, icon?: string) => void;
@@ -16,36 +16,55 @@ export const ContentScraperView: React.FC<ContentScraperViewProps> = ({
   const [pdpChecked, setPdpChecked] = useState(true);
   const [hashChecked, setHashChecked] = useState(true);
   const [isAuditing, setIsAuditing] = useState(false);
-  const [activeItemView, setActiveItemView] = useState<{ [sku: string]: 'plp' | 'pdp' }>({
-    'SAUCE-BP-001': 'plp',
-    'SAUCE-BL-002': 'plp',
-    'SAUCE-TS-003': 'pdp',
-    'SAUCE-FJ-004': 'plp',
-    'SAUCE-ON-005': 'plp',
-    'SAUCE-TAT-006': 'plp',
-  });
+  const [items, setItems] = useState<InventoryInspectionItem[]>([]);
+  const [runId, setRunId] = useState<string | undefined>(undefined);
+  const [activeItemView, setActiveItemView] = useState<{ [sku: string]: 'plp' | 'pdp' }>({});
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [consoleLogs, setConsoleLogs] = useState<string[]>([
-    '[09:12:04] [CRAWLER] Chromium 124 headless initialized with userAgent: "Playwright-Agent-SauceDemo/1.43"',
-    '[09:12:05] [AUTH] Successfully authenticated session for persona: problem_user (session_id=ps_90412)',
-    '[09:12:06] [DOM SCAN] Ingested 6 inventory cards from https://www.saucedemo.com/inventory.html',
-    '[09:12:07] [ASSET 404] FAIL: GET /static/media/sl-404.16f35e69.jpg -> HTTP 404 Not Found (SKU: SAUCE-BP-001)',
-    '[09:12:08] [HASH COLLISION] WARN: Item 0 (Bike Light) renders identical asset hash to Item 4 (Backpack)',
-    '[09:12:09] [DEEP SCAN PDP] FAIL: Route /inventory-item.html?id=1 price parsed as "$0.00" (Expected >= $9.99)',
-    '[09:12:10] [AUDIT SUMMARY] Scrape completed in 1.48s. 4 broken assets, 1 price glitch, 1 hash collision.',
+    '[idle] Run a live content audit to launch the real Playwright crawler against saucedemo.com',
   ]);
 
-  const handleRunAudit = () => {
+  useEffect(() => {
+    ScraperApi.latest()
+      .then((latest) => {
+        if (latest) {
+          setItems(latest.items);
+          setRunId(latest.runId);
+          setConsoleLogs(latest.logs);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const summary = {
+    total: items.length,
+    broken: items.filter((i) => i.statusBadgeType === 'error').length,
+    hash: items.filter((i) => i.statusBadgeType === 'tertiary').length,
+    price: items.filter((i) => i.priceNote === '(Zero Price)').length,
+  };
+
+  const handleRunAudit = async () => {
     setIsAuditing(true);
-    onShowToast('Executing Playwright DOM asset scraper...');
-    setTimeout(() => {
+    onShowToast(`Executing Playwright DOM asset scraper for ${selectedPersona}...`);
+    try {
+      const result = await ScraperApi.run({
+        persona: selectedPersona,
+        plp: plpChecked,
+        pdp: pdpChecked,
+        hash: hashChecked,
+      });
+      setItems(result.items);
+      setRunId(result.runId);
+      setConsoleLogs(result.logs);
+      onShowToast(
+        `Audit sweep complete: ${result.summary.brokenAssets} broken asset(s), ${result.summary.hashCollisions} hash collision group(s)`,
+        'check_circle'
+      );
+    } catch (err) {
+      onShowToast(`Scrape failed: ${(err as Error).message}`, 'error');
+    } finally {
       setIsAuditing(false);
-      setConsoleLogs((prev) => [
-        ...prev,
-        `[${new Date().toLocaleTimeString()}] [RE-SCAN] Triggered manual sweep for ${selectedPersona}. DOM snapshot synced to SQLite.`,
-      ]);
-      onShowToast('Audit sweep complete: 4 image failures verified', 'check_circle');
-    }, 1200);
+    }
   };
 
   const handleCopyJiraSnippet = (item: InventoryInspectionItem) => {
@@ -53,11 +72,14 @@ export const ContentScraperView: React.FC<ContentScraperViewProps> = ({
     onShowToast(`Copied Jira defect snippet for ${item.name}`, 'content_copy');
   };
 
-  const handlePushAllToJira = () => {
-    onShowToast('Pushed 4 defect issues to Jira queue (SAUCE-1039 through SAUCE-1042)', 'send');
-    setTimeout(() => {
-      onNavigateToIssues();
-    }, 800);
+  const handlePushAllToJira = async () => {
+    try {
+      const result = await ScraperApi.pushDefects(runId);
+      onShowToast(`Pushed ${result.count} defect issue(s) to the triage queue`, 'send');
+      setTimeout(() => onNavigateToIssues(), 600);
+    } catch (err) {
+      onShowToast(`Failed to push defects: ${(err as Error).message}`, 'error');
+    }
   };
 
   return (
@@ -156,52 +178,64 @@ export const ContentScraperView: React.FC<ContentScraperViewProps> = ({
       </div>
 
       {/* Failure Alert Banner */}
-      <div className="bg-[var(--color-error-container)]/20 border border-[var(--color-error-container)]/60 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <span className="material-symbols-outlined text-[var(--color-error)] text-2xl mt-0.5">
-            error
-          </span>
-          <div>
-            <h3 className="font-headline-md text-base font-bold text-[var(--color-error)]">
-              4 Broken Image Assets Detected (HTTP 404)
-            </h3>
-            <p className="font-body-md text-xs text-[var(--color-error)] mt-0.5">
-              <code className="text-[var(--color-on-surface)] font-mono bg-[var(--color-error-container)]/40 px-1 rounded">problem_user</code> encounters broken asset <code className="text-[var(--color-on-surface)] font-mono">sl-404.16f35e69.jpg</code> across 4 distinct inventory cards. Duplicate asset collision identified on Bike Light accessory.
-            </p>
-          </div>
+      {items.length === 0 ? (
+        <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-5 text-center text-sm text-[var(--color-on-surface-variant)]">
+          No audit results yet. Click <span className="font-bold text-[var(--color-on-surface)]">Run Live Content Audit</span> to launch the real Playwright crawler against saucedemo.com.
         </div>
+      ) : summary.broken + summary.hash + summary.price > 0 ? (
+        <div className="bg-[var(--color-error-container)]/20 border border-[var(--color-error-container)]/60 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="material-symbols-outlined text-[var(--color-error)] text-2xl mt-0.5">
+              error
+            </span>
+            <div>
+              <h3 className="font-headline-md text-base font-bold text-[var(--color-error)]">
+                {summary.broken + summary.hash + summary.price} Asset Defect(s) Detected
+              </h3>
+              <p className="font-body-md text-xs text-[var(--color-error)] mt-0.5">
+                <code className="text-[var(--color-on-surface)] font-mono bg-[var(--color-error-container)]/40 px-1 rounded">{selectedPersona}</code> triggered {summary.broken} broken HTTP asset(s), {summary.hash} duplicate-image collision(s), and {summary.price} price anomaly(ies) across {summary.total} scraped products.
+              </p>
+            </div>
+          </div>
 
-        <button
-          onClick={handlePushAllToJira}
-          className="px-4 py-2 rounded-lg bg-[var(--color-error)] text-[var(--color-on-error)] text-xs font-bold hover:bg-white hover:text-black transition-all cursor-pointer whitespace-nowrap shadow-sm"
-        >
-          Push 4 Defect Tickets to Jira
-        </button>
-      </div>
+          <button
+            onClick={handlePushAllToJira}
+            className="px-4 py-2 rounded-lg bg-[var(--color-error)] text-[var(--color-on-error)] text-xs font-bold hover:bg-white hover:text-black transition-all cursor-pointer whitespace-nowrap shadow-sm"
+          >
+            Push {summary.broken + summary.hash + summary.price} Defect Ticket(s) to Jira
+          </button>
+        </div>
+      ) : (
+        <div className="bg-[var(--color-secondary)]/10 border border-[var(--color-surface-container-high)] rounded-xl p-4 sm:p-5 text-sm text-[var(--color-secondary)]">
+          Clean scrape for <span className="font-bold">{selectedPersona}</span> — no broken assets, duplicate images, or price anomalies detected across {summary.total} products.
+        </div>
+      )}
 
       {/* Scraped Metrics Summary Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
           <span className="text-[11px] font-code-sm text-[var(--color-outline)] uppercase block">Total Scraped</span>
-          <span className="text-xl font-bold font-mono text-[var(--color-on-surface)]">6 Inventory Items</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-on-surface)]">{summary.total} Inventory Items</span>
         </div>
         <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
           <span className="text-[11px] font-code-sm text-[var(--color-error)] uppercase block">Broken Assets</span>
-          <span className="text-xl font-bold font-mono text-[var(--color-error)]">4 (66.7% failure)</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-error)]">
+            {summary.broken}{summary.total > 0 ? ` (${((summary.broken / summary.total) * 100).toFixed(1)}% failure)` : ''}
+          </span>
         </div>
         <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
           <span className="text-[11px] font-code-sm text-[var(--color-tertiary)] uppercase block">Hash Collisions</span>
-          <span className="text-xl font-bold font-mono text-[var(--color-tertiary)]">1 Reused Asset</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-tertiary)]">{summary.hash} Reused Asset(s)</span>
         </div>
         <div className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-lg p-3">
           <span className="text-[11px] font-code-sm text-[var(--color-warning)] uppercase block">Price Anomalies</span>
-          <span className="text-xl font-bold font-mono text-[var(--color-warning)]">1 ($0.00 Zero Price)</span>
+          <span className="text-xl font-bold font-mono text-[var(--color-warning)]">{summary.price} ($0.00 Zero Price)</span>
         </div>
       </div>
 
-      {/* 6 Inventory Inspection Cards */}
+      {/* Inventory Inspection Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {INVENTORY_ITEMS.map((item) => {
+        {items.map((item) => {
           const currentMode = activeItemView[item.sku] || 'plp';
           return (
             <div
@@ -332,7 +366,7 @@ export const ContentScraperView: React.FC<ContentScraperViewProps> = ({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-secondary)] animate-pulse"></span>
             <span className="font-code-sm text-xs font-bold text-[var(--color-on-surface)]">
-              Crawler Execution Stream (Chromium v124 Headless)
+              Crawler Execution Stream (Chromium v153 Headless)
             </span>
             <span className="font-label-badge text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-surface-container)] text-[var(--color-tertiary)]">
               {consoleLogs.length} events logged

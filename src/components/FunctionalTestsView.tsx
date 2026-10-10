@@ -101,7 +101,7 @@ export const FunctionalTestsView: React.FC<FunctionalTestsViewProps> = ({
             Playwright Test Suite • Execution Waterfall
           </h1>
           <p className="font-body-md text-sm text-[var(--color-on-surface-variant)] mt-1">
-            Worker #3 (PID 4914) running <code className="text-[var(--color-primary)] font-mono">e2e/checkout-journey.spec.ts</code> against Chromium 124 Headless.
+            Worker #3 (PID 4914) running <code className="text-[var(--color-primary)] font-mono">e2e/checkout-journey.spec.ts</code> against Chromium 153 Headless.
           </p>
         </div>
 

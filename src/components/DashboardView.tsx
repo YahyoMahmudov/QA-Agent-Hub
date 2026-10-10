@@ -1,6 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationTab, TestRunItem } from '../types';
-import { RECENT_RUNS } from '../data/mockData';
+import { SuiteApi, DashboardApi, DashboardOverview } from '../lib/api';
+
+const AREA_COLORS: Record<string, string> = {
+  'Checkout Flow': 'var(--color-error)',
+  PLP: 'var(--color-tertiary)',
+  PDP: 'var(--color-primary-container)',
+  Login: 'var(--color-secondary)',
+};
+const CIRCUMFERENCE = 2 * Math.PI * 60;
+
+const statusPillClass = (status: string) =>
+  status === 'pass'
+    ? 'bg-[var(--color-secondary-container)]/20 text-[var(--color-secondary)]'
+    : status === 'error'
+    ? 'bg-[var(--color-error-container)]/30 text-[var(--color-error)]'
+    : status === 'warning'
+    ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
+    : 'bg-[var(--color-surface-container-high)] text-[var(--color-outline)]';
 
 interface DashboardViewProps {
   onNavigateTab: (tab: NavigationTab) => void;
@@ -15,88 +32,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const [timeFilter, setTimeFilter] = useState<'24h' | '7d' | '30d'>('24h');
   const [selectedRun, setSelectedRun] = useState<TestRunItem | null>(null);
+  const [recentRuns, setRecentRuns] = useState<TestRunItem[]>([]);
+  const [overview, setOverview] = useState<DashboardOverview | null>(null);
 
-  const personas = [
-    {
-      name: 'standard_user',
-      auth: 'Authenticated',
-      authNote: 'Valid session',
-      plp: '200 OK',
-      plpNote: 'Clean DOM',
-      plpStatus: 'pass',
-      checkout: 'Complete',
-      checkoutNote: 'Step 08 Pass',
-      checkoutStatus: 'pass',
-      ttfb: '240ms',
-      ttfbStatus: 'good',
-    },
-    {
-      name: 'problem_user',
-      auth: 'Authenticated',
-      authNote: 'Valid session',
-      plp: '404 Error',
-      plpNote: 'Broken Assets',
-      plpStatus: 'error',
-      checkout: 'Blocked',
-      checkoutNote: 'Last Name Locked',
-      checkoutStatus: 'error',
-      ttfb: '310ms',
-      ttfbStatus: 'good',
-    },
-    {
-      name: 'performance_glitch_user',
-      auth: 'Authenticated',
-      authNote: 'Valid session',
-      plp: '200 OK',
-      plpNote: 'Slow Load',
-      plpStatus: 'warning',
-      checkout: 'Complete',
-      checkoutNote: 'SLA Warning',
-      checkoutStatus: 'warning',
-      ttfb: '3,820ms',
-      ttfbStatus: 'breach',
-    },
-    {
-      name: 'error_user',
-      auth: 'Authenticated',
-      authNote: 'Valid session',
-      plp: '200 OK',
-      plpNote: 'Clean DOM',
-      plpStatus: 'pass',
-      checkout: '404 Route',
-      checkoutNote: 'Finish Action',
-      checkoutStatus: 'error',
-      ttfb: '280ms',
-      ttfbStatus: 'good',
-    },
-    {
-      name: 'visual_user',
-      auth: 'Authenticated',
-      authNote: 'Valid session',
-      plp: 'Shift Diff',
-      plpNote: 'Cart Badge 1px',
-      plpStatus: 'warning',
-      checkout: 'Complete',
-      checkoutNote: 'Step 08 Pass',
-      checkoutStatus: 'pass',
-      ttfb: '260ms',
-      ttfbStatus: 'good',
-    },
-    {
-      name: 'locked_out_user',
-      auth: 'Rejected',
-      authNote: '403 Forbidden',
-      authStatus: 'warning',
-      plp: 'N/A',
-      plpNote: 'Access Denied',
-      plpStatus: 'neutral',
-      checkout: 'N/A',
-      checkoutNote: 'Blocked',
-      checkoutStatus: 'neutral',
-      ttfb: '190ms',
-      ttfbStatus: 'good',
-    },
-  ];
+  useEffect(() => {
+    SuiteApi.runs(20)
+      .then(setRecentRuns)
+      .catch(() => {});
+    DashboardApi.overview()
+      .then(setOverview)
+      .catch(() => {});
+  }, []);
+
+  const personaMatrix = overview?.personaMatrix ?? [];
+
+  const distributionSegments = (() => {
+    let cumulative = 0;
+    return (overview?.defectDistribution ?? []).map((d) => {
+      const dash = (d.pct / 100) * CIRCUMFERENCE;
+      const seg = { ...d, dash, offset: -cumulative, color: AREA_COLORS[d.area] ?? 'var(--color-outline)' };
+      cumulative += dash;
+      return seg;
+    });
+  })();
 
   return (
     <div className="w-full space-y-6 pb-12">
@@ -108,16 +66,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span>/</span>
             <span>CI/CD Test Pipeline</span>
             <span>/</span>
-            <span className="text-[var(--color-primary)]">Suite Run #8941</span>
+            <span className="text-[var(--color-primary)]">
+              {recentRuns[0] ? `Last Run ${recentRuns[0].id}` : 'No Runs Yet'}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <h1 className="font-headline-xl text-2xl sm:text-3xl font-bold text-[var(--color-on-surface)]">
               SauceDemo Telemetry Dashboard
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-secondary-container)]/20 border border-[var(--color-secondary-container)]/40 text-[var(--color-secondary)] font-label-badge text-xs">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] animate-pulse"></span>
-              LIVE AUDIT ACTIVE
-            </span>
+            {recentRuns.length > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-secondary-container)]/20 border border-[var(--color-secondary-container)]/40 text-[var(--color-secondary)] font-label-badge text-xs">
+                <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] animate-pulse"></span>
+                DATA FROM REAL RUNS
+              </span>
+            )}
           </div>
         </div>
 
@@ -156,33 +118,50 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between text-xs font-code-sm text-[var(--color-outline)] uppercase tracking-wider mb-2">
               <span>Overall Pass Rate</span>
-              <span className="text-[var(--color-error)] font-mono font-bold">-3.2%</span>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-headline-xl text-3xl sm:text-4xl font-bold text-[var(--color-on-surface)]">
-                78.4%
-              </span>
-              <span className="text-xs text-[var(--color-outline)]">across 92 specs</span>
-            </div>
+            {overview && overview.passRate.total > 0 ? (
+              <div className="flex items-baseline gap-2">
+                <span className="font-headline-xl text-3xl sm:text-4xl font-bold text-[var(--color-on-surface)]">
+                  {overview.passRate.rate}%
+                </span>
+                <span className="text-xs text-[var(--color-outline)]">across {overview.passRate.total} recent runs</span>
+              </div>
+            ) : (
+              <span className="text-sm text-[var(--color-outline)]">No suite runs yet</span>
+            )}
           </div>
-          <div className="mt-4">
-            <div className="w-full bg-[var(--color-surface-container-high)] h-2 rounded-full overflow-hidden flex">
-              <div className="bg-[var(--color-secondary)] h-full" style={{ width: '78.4%' }} title="78.4% Passed"></div>
-              <div className="bg-[var(--color-tertiary-fixed)] h-full" style={{ width: '6.5%' }} title="6.5% Flaky"></div>
-              <div className="bg-[var(--color-error)] h-full" style={{ width: '15.1%' }} title="15.1% Failed"></div>
+          {overview && overview.passRate.total > 0 && (
+            <div className="mt-4">
+              <div className="w-full bg-[var(--color-surface-container-high)] h-2 rounded-full overflow-hidden flex">
+                <div
+                  className="bg-[var(--color-secondary)] h-full"
+                  style={{ width: `${(overview.passRate.passed / overview.passRate.total) * 100}%` }}
+                  title={`${overview.passRate.passed} Passed`}
+                ></div>
+                <div
+                  className="bg-[var(--color-tertiary-fixed)] h-full"
+                  style={{ width: `${(overview.passRate.flaky / overview.passRate.total) * 100}%` }}
+                  title={`${overview.passRate.flaky} Flaky`}
+                ></div>
+                <div
+                  className="bg-[var(--color-error)] h-full"
+                  style={{ width: `${(overview.passRate.failed / overview.passRate.total) * 100}%` }}
+                  title={`${overview.passRate.failed} Failed`}
+                ></div>
+              </div>
+              <div className="flex items-center justify-between mt-2 text-[11px] font-code-sm text-[var(--color-outline)]">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)]"></span> {overview.passRate.passed} Passed
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-tertiary-fixed)]"></span> {overview.passRate.flaky} Flaky
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-error)]"></span> {overview.passRate.failed} Failed
+                </span>
+              </div>
             </div>
-            <div className="flex items-center justify-between mt-2 text-[11px] font-code-sm text-[var(--color-outline)]">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)]"></span> 72 Passed
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[var(--color-tertiary-fixed)]"></span> 6 Flaky
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[var(--color-error)]"></span> 14 Failed
-              </span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Card 2: Defects Logged */}
@@ -193,18 +172,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between text-xs font-code-sm text-[var(--color-outline)] uppercase tracking-wider mb-2">
               <span>Defects Logged</span>
-              <span className="text-[var(--color-secondary)] font-mono font-bold">+12 new</span>
             </div>
             <div className="flex items-baseline gap-2">
               <span className="font-headline-xl text-3xl sm:text-4xl font-bold text-[var(--color-error)] group-hover:text-[var(--color-on-surface)] transition-colors">
-                46 Active
+                {overview?.defects.total ?? 0} Active
               </span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-[var(--color-surface-container-high)] flex items-center justify-between text-xs font-code-sm">
-            <span className="text-[var(--color-error)] font-semibold">14 Critical</span>
-            <span className="text-[var(--color-warning)] font-semibold">22 High</span>
-            <span className="text-[var(--color-tertiary)] font-semibold">10 Minor</span>
+            <span className="text-[var(--color-error)] font-semibold">{overview?.defects.critical ?? 0} Critical</span>
+            <span className="text-[var(--color-warning)] font-semibold">{overview?.defects.high ?? 0} High</span>
+            <span className="text-[var(--color-tertiary)] font-semibold">
+              {(overview?.defects.medium ?? 0) + (overview?.defects.low ?? 0)} Minor
+            </span>
           </div>
         </div>
 
@@ -216,41 +196,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between text-xs font-code-sm text-[var(--color-outline)] uppercase tracking-wider mb-2">
               <span>Persona Coverage</span>
-              <span className="text-[var(--color-secondary)] font-mono font-bold">100% Matrix</span>
             </div>
             <div className="flex items-baseline gap-2">
               <span className="font-headline-xl text-3xl sm:text-4xl font-bold text-[var(--color-tertiary)] group-hover:text-[var(--color-on-surface)] transition-colors">
-                6 / 6
+                {overview?.personaCoverage.tested ?? 0} / {overview?.personaCoverage.total ?? 6}
               </span>
-              <span className="text-xs text-[var(--color-outline)]">Profiles</span>
+              <span className="text-xs text-[var(--color-outline)]">Profiles Tested</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-[var(--color-surface-container-high)] flex items-center gap-1.5 text-xs font-code-sm text-[var(--color-error)]">
             <span className="material-symbols-outlined text-sm">warning</span>
-            <span>2 Profiles Flagged with Fatal Errors</span>
+            <span>{overview?.personaCoverage.flagged ?? 0} Profile(s) Flagged with Failures</span>
           </div>
         </div>
 
-        {/* Card 4: Asset 404 Detections */}
+        {/* Card 4: Asset Detections */}
         <div
           onClick={() => onNavigateTab('content-scraper')}
           className="bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-high)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--color-error)]/50 transition-all cursor-pointer group"
         >
           <div>
             <div className="flex items-center justify-between text-xs font-code-sm text-[var(--color-outline)] uppercase tracking-wider mb-2">
-              <span>Asset 404 Detections</span>
+              <span>Asset Detections</span>
               <span className="text-[var(--color-tertiary)] font-mono font-bold">Scraper DOM</span>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-headline-xl text-3xl sm:text-4xl font-bold text-[var(--color-error)] group-hover:text-[var(--color-on-surface)] transition-colors">
-                4 Broken
-              </span>
-              <span className="text-xs text-[var(--color-outline)]">Images</span>
-            </div>
+            {overview?.assetDetections ? (
+              <div className="flex items-baseline gap-2">
+                <span className="font-headline-xl text-3xl sm:text-4xl font-bold text-[var(--color-error)] group-hover:text-[var(--color-on-surface)] transition-colors">
+                  {overview.assetDetections.brokenAssets + overview.assetDetections.hashCollisions + overview.assetDetections.priceAnomalies}
+                </span>
+                <span className="text-xs text-[var(--color-outline)]">Found</span>
+              </div>
+            ) : (
+              <span className="text-sm text-[var(--color-outline)]">No scrape run yet</span>
+            )}
           </div>
           <div className="mt-4 pt-3 border-t border-[var(--color-surface-container-high)] flex items-center gap-1.5 text-xs font-code-sm text-[var(--color-secondary)]">
             <span className="material-symbols-outlined text-sm">check_circle</span>
-            <span>100% Repro on problem_user</span>
+            <span>
+              {overview?.assetDetections ? `Last audited persona: ${overview.assetDetections.persona}` : 'Run a content audit to populate'}
+            </span>
           </div>
         </div>
       </div>
@@ -285,78 +270,69 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <th className="pb-3 font-semibold">Auth State</th>
                   <th className="pb-3 font-semibold">PLP Visuals</th>
                   <th className="pb-3 font-semibold">Checkout Flow</th>
-                  <th className="pb-3 font-semibold text-right">Avg TTFB</th>
+                  <th className="pb-3 font-semibold text-right">Avg Duration</th>
                   <th className="pb-3 font-semibold text-right">Trace</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-surface-container-high)]/60 text-xs font-body-sm">
-                {personas.map((p) => (
-                  <tr key={p.name} className="hover:bg-[var(--color-surface-container)]/50 transition-colors">
+                {personaMatrix.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-[var(--color-outline)]">
+                      Run a suite or content audit to populate this matrix with real per-persona results.
+                    </td>
+                  </tr>
+                )}
+                {personaMatrix.map((p) => (
+                  <tr key={p.persona} className="hover:bg-[var(--color-surface-container)]/50 transition-colors">
                     <td className="py-3 font-mono font-medium text-[var(--color-on-surface)]">
-                      {p.name}
+                      {p.persona}
                     </td>
                     <td className="py-3">
                       <div className="flex items-center gap-1.5">
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            p.authStatus === 'warning' ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-secondary)]'
+                            p.auth.status === 'warning' || p.auth.status === 'error'
+                              ? 'bg-[var(--color-warning)]'
+                              : p.auth.status === 'neutral'
+                              ? 'bg-[var(--color-outline)]'
+                              : 'bg-[var(--color-secondary)]'
                           }`}
                         ></span>
-                        <span className="text-[var(--color-on-surface-variant)]">{p.auth}</span>
+                        <span className="text-[var(--color-on-surface-variant)]">{p.auth.label}</span>
                       </div>
-                      <span className="text-[10px] text-[var(--color-outline)] font-mono">{p.authNote}</span>
+                      <span className="text-[10px] text-[var(--color-outline)] font-mono truncate block max-w-[160px]">{p.auth.note}</span>
                     </td>
                     <td className="py-3">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                          p.plpStatus === 'pass'
-                            ? 'bg-[var(--color-secondary-container)]/20 text-[var(--color-secondary)]'
-                            : p.plpStatus === 'error'
-                            ? 'bg-[var(--color-error-container)]/30 text-[var(--color-error)]'
-                            : p.plpStatus === 'warning'
-                            ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
-                            : 'bg-[var(--color-surface-container-high)] text-[var(--color-outline)]'
-                        }`}
-                      >
-                        {p.plp}
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold ${statusPillClass(p.plp.status)}`}>
+                        {p.plp.label}
                       </span>
-                      <div className="text-[10px] text-[var(--color-outline)] mt-0.5 font-mono">{p.plpNote}</div>
+                      <div className="text-[10px] text-[var(--color-outline)] mt-0.5 font-mono truncate max-w-[160px]">{p.plp.note}</div>
                     </td>
                     <td className="py-3">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                          p.checkoutStatus === 'pass'
-                            ? 'bg-[var(--color-secondary-container)]/20 text-[var(--color-secondary)]'
-                            : p.checkoutStatus === 'error'
-                            ? 'bg-[var(--color-error-container)]/30 text-[var(--color-error)]'
-                            : p.checkoutStatus === 'warning'
-                            ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]'
-                            : 'bg-[var(--color-surface-container-high)] text-[var(--color-outline)]'
-                        }`}
-                      >
-                        {p.checkout}
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold ${statusPillClass(p.checkout.status)}`}>
+                        {p.checkout.label}
                       </span>
-                      <div className="text-[10px] text-[var(--color-outline)] mt-0.5 font-mono">{p.checkoutNote}</div>
+                      <div className="text-[10px] text-[var(--color-outline)] mt-0.5 font-mono truncate max-w-[160px]">{p.checkout.note}</div>
                     </td>
                     <td className="py-3 text-right font-mono">
                       <span
                         className={
-                          p.ttfbStatus === 'breach'
+                          p.avgDurationMs && p.avgDurationMs > 3000
                             ? 'text-[var(--color-error)] font-bold bg-[var(--color-error-container)]/30 px-1.5 py-0.5 rounded'
                             : 'text-[var(--color-on-surface-variant)]'
                         }
                       >
-                        {p.ttfb}
+                        {p.avgDurationMs != null ? `${p.avgDurationMs.toLocaleString()}ms` : 'N/A'}
                       </span>
                     </td>
                     <td className="py-3 text-right">
                       <button
                         onClick={() => {
                           onNavigateTab('functional-tests');
-                          onShowToast(`Loaded Playwright trace for ${p.name}`);
+                          onShowToast(`Loaded Playwright trace for ${p.persona}`);
                         }}
                         className="p-1 rounded hover:bg-[var(--color-surface-container-high)] text-[var(--color-primary)] hover:text-[var(--color-on-surface)]"
-                        title={`Inspect ${p.name}`}
+                        title={`Inspect ${p.persona}`}
                       >
                         <span className="material-symbols-outlined text-base">visibility</span>
                       </button>
@@ -375,61 +351,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <h2 className="font-headline-md text-base font-bold text-[var(--color-on-surface)]">
                 Defect Distribution
               </h2>
-              <span className="font-code-sm text-[11px] text-[var(--color-tertiary)]">46 Total Issues</span>
+              <span className="font-code-sm text-[11px] text-[var(--color-tertiary)]">
+                {overview?.defects.total ?? 0} Total Issues
+              </span>
             </div>
 
             {/* Donut Chart Visualization */}
             <div className="relative flex items-center justify-center my-6">
               <svg viewBox="0 0 160 160" className="w-40 h-40 transform -rotate-90">
-                {/* Background circle */}
                 <circle cx="80" cy="80" r="60" fill="transparent" stroke="var(--color-surface-container-high)" strokeWidth="20" />
-                {/* Red: Checkout Flow 42% (Circumference ~ 376.99) */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="60"
-                  fill="transparent"
-                  stroke="var(--color-error)"
-                  strokeWidth="20"
-                  strokeDasharray="158 377"
-                  strokeDashoffset="0"
-                />
-                {/* Cyan: PLP Images 35% */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="60"
-                  fill="transparent"
-                  stroke="var(--color-tertiary)"
-                  strokeWidth="20"
-                  strokeDasharray="132 377"
-                  strokeDashoffset="-158"
-                />
-                {/* Purple: Form Validation 15% */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="60"
-                  fill="transparent"
-                  stroke="var(--color-primary-container)"
-                  strokeWidth="20"
-                  strokeDasharray="56 377"
-                  strokeDashoffset="-290"
-                />
-                {/* Green: Auth 8% */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="60"
-                  fill="transparent"
-                  stroke="var(--color-secondary)"
-                  strokeWidth="20"
-                  strokeDasharray="30 377"
-                  strokeDashoffset="-346"
-                />
+                {distributionSegments.map((seg) => (
+                  <circle
+                    key={seg.area}
+                    cx="80"
+                    cy="80"
+                    r="60"
+                    fill="transparent"
+                    stroke={seg.color}
+                    strokeWidth="20"
+                    strokeDasharray={`${seg.dash} ${CIRCUMFERENCE}`}
+                    strokeDashoffset={seg.offset}
+                  />
+                ))}
               </svg>
               <div className="absolute text-center">
-                <span className="font-headline-xl text-2xl font-bold text-[var(--color-on-surface)] block">46</span>
+                <span className="font-headline-xl text-2xl font-bold text-[var(--color-on-surface)] block">
+                  {overview?.defects.total ?? 0}
+                </span>
                 <span className="text-[10px] font-code-sm text-[var(--color-outline)] uppercase tracking-wider block">
                   Defects
                 </span>
@@ -438,34 +386,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Legend */}
             <div className="space-y-2 text-xs font-code-sm">
-              <div className="flex items-center justify-between p-1.5 rounded hover:bg-[var(--color-surface-container)] transition-colors">
-                <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-error)]"></span>
-                  <span className="text-[var(--color-on-surface)]">Checkout Flow</span>
-                </span>
-                <span className="font-bold text-[var(--color-error)]">42% (19)</span>
-              </div>
-              <div className="flex items-center justify-between p-1.5 rounded hover:bg-[var(--color-surface-container)] transition-colors">
-                <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-tertiary)]"></span>
-                  <span className="text-[var(--color-on-surface)]">PLP Asset 404s</span>
-                </span>
-                <span className="font-bold text-[var(--color-tertiary)]">35% (16)</span>
-              </div>
-              <div className="flex items-center justify-between p-1.5 rounded hover:bg-[var(--color-surface-container)] transition-colors">
-                <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary-container)]"></span>
-                  <span className="text-[var(--color-on-surface)]">Form Inputs</span>
-                </span>
-                <span className="font-bold text-[var(--color-primary-container)]">15% (7)</span>
-              </div>
-              <div className="flex items-center justify-between p-1.5 rounded hover:bg-[var(--color-surface-container)] transition-colors">
-                <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-secondary)]"></span>
-                  <span className="text-[var(--color-on-surface)]">Auth Guard</span>
-                </span>
-                <span className="font-bold text-[var(--color-secondary)]">8% (4)</span>
-              </div>
+              {distributionSegments.length === 0 && (
+                <div className="text-center text-[var(--color-outline)] py-2">No open defects yet</div>
+              )}
+              {distributionSegments.map((seg) => (
+                <div key={seg.area} className="flex items-center justify-between p-1.5 rounded hover:bg-[var(--color-surface-container)] transition-colors">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: seg.color }}></span>
+                    <span className="text-[var(--color-on-surface)]">{seg.area}</span>
+                  </span>
+                  <span className="font-bold" style={{ color: seg.color }}>
+                    {seg.pct}% ({seg.count})
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -486,7 +420,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Recent Playwright Test Executions
             </h2>
             <p className="font-code-sm text-xs text-[var(--color-outline)]">
-              Automated worker threads running against Chromium 124 Headless
+              Automated worker threads running against Chromium 153 Headless
             </p>
           </div>
           <button
@@ -510,7 +444,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-surface-container-high)]/60 text-xs font-body-sm">
-              {RECENT_RUNS.map((run) => (
+              {recentRuns.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-[var(--color-outline)]">
+                    No suite runs yet. Trigger "Run Full Suite" to populate this table with real Playwright results.
+                  </td>
+                </tr>
+              )}
+              {recentRuns.map((run) => (
                 <tr key={run.id} className="hover:bg-[var(--color-surface-container)]/50 transition-colors">
                   <td className="py-3 font-mono font-medium text-[var(--color-primary)]">
                     {run.spec}

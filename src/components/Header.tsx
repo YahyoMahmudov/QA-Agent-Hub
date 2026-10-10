@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { NavigationTab } from '../types';
-import { NOTIFICATIONS } from '../data/mockData';
+import { NavigationTab, DefectIssue, ReviewPin } from '../types';
 import { Theme } from '../hooks/useTheme';
 
 interface HeaderProps {
@@ -8,6 +7,9 @@ interface HeaderProps {
   onTabChange: (tab: NavigationTab) => void;
   onRunFullSuite: () => void;
   recordCount: number;
+  dbSizeMB: number | null;
+  issues: DefectIssue[];
+  pins: ReviewPin[];
   theme: Theme;
   onToggleTheme: () => void;
 }
@@ -17,12 +19,30 @@ export const Header: React.FC<HeaderProps> = ({
   onTabChange,
   onRunFullSuite,
   recordCount,
+  dbSizeMB,
+  issues,
+  pins,
   theme,
   onToggleTheme,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(7);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  // Real notifications derived from the most recently seen open/in-progress
+  // defects (no separate notifications table - the issues list is the
+  // source of truth).
+  const notifications = issues
+    .filter((i) => i.status === 'open' || i.status === 'in_progress')
+    .slice(0, 8)
+    .map((i) => ({
+      id: i.id,
+      title: i.title,
+      desc: i.diagnostic,
+      time: i.lastSeen,
+      type: i.severity === 'critical' || i.severity === 'high' ? 'error' : i.severity === 'medium' ? 'warning' : 'info',
+    }));
+  const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length;
 
   const navItems: { id: NavigationTab; label: string }[] = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -58,7 +78,8 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-[var(--color-surface-container-low)] border border-[var(--color-surface-container-highest)]/40">
               <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] animate-pulse"></span>
               <span className="font-code-sm text-xs text-[var(--color-on-surface-variant)]">
-                SQLite: connected (local.db - 42.8 MB • {recordCount.toLocaleString()} rows)
+                SQLite: connected (local_qa_vault.db
+                {dbSizeMB != null ? ` - ${dbSizeMB} MB` : ''} • {recordCount.toLocaleString()} rows)
               </span>
             </div>
           </div>
@@ -91,7 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
               https://www.saucedemo.com
             </span>
             <span className="font-label-badge uppercase px-1.5 py-0.5 rounded bg-[var(--color-surface-container)] text-[var(--color-tertiary)] text-[10px]">
-              Chromium 124
+              Chromium 153
             </span>
           </div>
 
@@ -146,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   {unreadCount > 0 && (
                     <button
-                      onClick={() => setUnreadCount(0)}
+                      onClick={() => setReadIds(new Set(notifications.map((n) => n.id)))}
                       className="text-xs text-[var(--color-primary)] hover:underline"
                     >
                       Mark all read
@@ -154,7 +175,12 @@ export const Header: React.FC<HeaderProps> = ({
                   )}
                 </div>
                 <div className="max-h-80 overflow-y-auto divide-y divide-[var(--color-surface-container-high)]">
-                  {NOTIFICATIONS.map((notif) => (
+                  {notifications.length === 0 && (
+                    <div className="p-4 text-center text-xs text-[var(--color-outline)]">
+                      No open defects. Run a suite or content audit to generate findings.
+                    </div>
+                  )}
+                  {notifications.map((notif) => (
                     <div
                       key={notif.id}
                       className="p-3 hover:bg-[var(--color-surface-container)] transition-colors cursor-pointer flex items-start gap-2.5"
@@ -202,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className="text-xs text-[var(--color-tertiary)] hover:underline font-mono"
                   >
-                    View all 46 telemetry findings →
+                    View all {issues.length} telemetry findings →
                   </button>
                 </div>
               </div>
@@ -245,7 +271,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full text-left px-3 py-1.5 rounded hover:bg-[var(--color-surface-container)] text-[var(--color-on-surface-variant)] flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-sm text-[var(--color-tertiary)]">push_pin</span>
-                  <span>My Dropped Review Pins (3)</span>
+                  <span>Review Pins ({pins.length})</span>
                 </button>
                 <button
                   onClick={() => {

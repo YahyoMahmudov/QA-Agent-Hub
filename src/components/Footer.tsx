@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
             © 2024 QA Agent Hub • SauceDemo Automation Core
           </span>
           <span className="font-label-badge uppercase px-2 py-0.5 rounded bg-[var(--color-surface-container)] text-[var(--color-secondary)] border border-[var(--color-surface-container-highest)]/50">
-            Engine: Playwright v1.43
+            Engine: Playwright v1.63
           </span>
         </div>
         <div className="flex items-center gap-4 text-xs font-code-sm text-[var(--color-outline)]">
