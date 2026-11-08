@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
             <img
               alt="QA Agent Hub Logo"
               className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
-              src="https://lh3.googleusercontent.com/aida/AEtjO1UEoQQrvwgYvOtBFDhsUPgsEWRG2rUn_OqPt39Jr4Ve5lxhuYaq1l8IsR6C_QC4IEm8_Bf3dZfpWxGC5K4ydc7bYMm69JYVWMRVzTz8t8_0SUxaEj8pcBN8E3MAoonJ2XS58xjdWXW-OdPFU2O9Aovk8t8lwA0e2PM6YntiCznxgTmFmkZxmTGQ5BuWsb-skgyE5z6H_-c2AmTQY56dL0Hp6971_5yDFZ11oAGQk-gB3sR3dqRA9tvStN4"
+              src="/logo.svg"
             />
             <span className="font-headline-md text-lg sm:text-xl text-[var(--color-on-surface)] font-bold tracking-tight">
               QA Agent Hub
